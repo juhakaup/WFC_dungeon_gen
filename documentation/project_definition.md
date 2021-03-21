@@ -2,9 +2,9 @@
 
 The aim of this project is to create a dungeon generator using wave function collapse algorithm.
  
-The wave function collapse -algorithm (WFC) generates tiled patterns from a set of adjacency rules. These rules can be pre-determined (simple tiled model), or generated from a source (overlapping model).
-As I'm interested in procedural content generation, I would like to imlement both models. This may turn out be a bit too much work for this course, so I'll start with the simpler model.
-The generated map may need some validating and post processing, so at least the simpler model could be extended with a pathfinding algoritm to ensure playable dungeon.
+The wave function collapse -algorithm generates tiled patterns from a set of adjacency rules. These rules can be pre-determined (simple tiled model), or generated from a source (overlapping model).
+I'm interested in procedural content generation, so implementing both models would be interesting. This may turn out be a bit too much work for this course, so I think the simpler model will do for now.
+The generated map may need some validating and post processing, so the simpler model could be extended with a pathfinding algoritm to ensure playable dungeon.
 
 ### Algorithms and data-structures
 The original implementation of the Wave function collapse algoritm mostly stores data in arrays and array-lists. I think some frequency data is stored in a map, but maybe I can come up with some other implementation. 
@@ -16,7 +16,6 @@ The space complexity for the algoritm is probably still within some multiple of 
 
 ### Input/Output
 Input for the simpler model is a JSON file containing the adjacency rulse and the tile set in ascii. The output can be printed to the command line or saved as text.
-Input for the overlapping model is a text file and the output is the same as for the simpler model.
 
 ### References
 https://github.com/mxgmn/WaveFunctionCollapse
