@@ -1,19 +1,37 @@
-apply plugin: 'java'
-apply plugin: 'jacoco'
+//apply plugin: 'java'
+//tasks.withType(JavaCompile) {
+//    options.encoding = 'UTF-8'
+//}
+//apply plugin: 'jacoco'
+//
+//jacocoTestReport {
+//    reports {
+//        xml.enabled = true
+//        html.enabled = true
+//    }
+//}
+//
+//check.dependsOn jacocoTestReport
+//
+//apply plugin: 'application'
+//
+//
+//mainClassName = 'WFC_dungeon_gen.Main'
+//
+//repositories {
+//    jcenter()
+//}
+//
+//dependencies {
+//    testCompile 'junit:junit:4.12'
+//}
 
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+    id 'checkstyle'
 }
-
-check.dependsOn jacocoTestReport
-
-apply plugin: 'application'
-
-
-mainClassName = 'WFC_dungeon_gen.Main'
 
 repositories {
     jcenter()
@@ -21,4 +39,17 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:4.12'
+}
+
+mainClassName = 'WFC_dungeon_gen.Main'
+
+run {
+    standardInput = System.in
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
 }

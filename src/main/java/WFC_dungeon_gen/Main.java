@@ -1,21 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package WFC_dungeon_gen;
+
+import WFC_dungeon_gen.domain.Solver;
+import WFC_dungeon_gen.domain.TileSet;
 
 /**
  *
- * @author scyti
+ * @author Juha Kauppinen
  */
 public class Main {
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        // TODO code application logic here
+        // tile frequencies  
+        TileSet ts = new TileSet();
+        int width = 24;
+        int depth = 8;
+        int numberOfTiles = ts.getNumberOfTiles();
+        int[] tileWeights = ts.getTileWeights();
+        
+        Solver dungeon = new Solver(width, depth, numberOfTiles, tileWeights);
+        dungeon.printMaze();
     }
     
 }
