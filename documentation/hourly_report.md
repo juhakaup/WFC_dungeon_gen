@@ -12,6 +12,7 @@ date       | time | task |
 
 ## Week 2
 date       | time | task |
+-----------|------|------|
 2021-03-23 | 2h   | Setting up project. Created hard coded data for testing |
 2021-03-24 | 3h   | Created basic class structure and some functionality |
 2021-03-25 | 2h   | Basic functionality of classes |
