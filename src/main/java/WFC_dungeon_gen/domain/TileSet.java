@@ -61,11 +61,11 @@ public class TileSet {
         allowedTilesRight[4] = strToBool("11111");
         
         boolean[][] allowedTilesDown = new boolean[allTiles.length()][allTiles.length()];
-        allowedTilesRight[0] = strToBool("00001");
-        allowedTilesRight[1] = strToBool("01011");
-        allowedTilesRight[2] = strToBool("01001");
-        allowedTilesRight[3] = strToBool("00001");
-        allowedTilesRight[4] = strToBool("11111");
+        allowedTilesDown[0] = strToBool("00001");
+        allowedTilesDown[1] = strToBool("01011");
+        allowedTilesDown[2] = strToBool("01001");
+        allowedTilesDown[3] = strToBool("00001");
+        allowedTilesDown[4] = strToBool("11111");
         
         boolean[][] allowedTilesLeft = new boolean[allTiles.length()][allTiles.length()];
         allowedTilesLeft[0] = strToBool("10011");
@@ -96,7 +96,7 @@ public class TileSet {
     
     public int[] getTileWeights() {
         // hard coded for now
-        return new int[]{5,5,1,1,20};
+        return new int[]{50,50,11,11,1};
     }
 }
 

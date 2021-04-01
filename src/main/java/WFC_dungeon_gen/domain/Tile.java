@@ -14,14 +14,18 @@ public class Tile {
     private final double randomNoise;
     private boolean collapsed;
     private double entropy;
+    private final int col;
+    private final int row;
     private final int[] tileWeights;
     private int sumOfPossibleWeights;
     
-    public Tile(double noise, int[] weights) {
+    public Tile(double noise, int[] weights, int row, int col) {
         this.finalValue = -1;
         this.displayedValue = "/";
         this.randomNoise = noise;
         this.tileWeights = weights;
+        this.row = row;
+        this.col = col;
         this.collapsed = false;
         this.availableTiles = new boolean[0];
     }
@@ -30,6 +34,14 @@ public class Tile {
     public String toString(){
         return String.valueOf(this.displayedValue);
     }
+    
+    public int getRow() {
+        return this.row;
+    }
+    
+    public int getCol() {
+        return this.col;
+    } 
     
     public boolean isCollapsed() {
         return this.collapsed;
@@ -52,6 +64,7 @@ public class Tile {
             this.entropy = calculateEntropy();
             this.sumOfPossibleWeights = sumOfPossibleWeights();
             
+            this.displayedValue = String.valueOf(newCardinality);
             if (this.numOfAvailableTiles == 1) {
                 this.collapsed = true;
                 for (int i=0;i<newTiles.length;i++) {

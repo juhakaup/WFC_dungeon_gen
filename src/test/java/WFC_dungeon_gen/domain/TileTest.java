@@ -21,7 +21,7 @@ public class TileTest {
     public void setUp() {
         this.noise = 0.1;
         this.weights = new int[]{10,10,5,5,25};
-        this.tile = new Tile(noise, weights);
+        this.tile = new Tile(noise, weights, 0, 0);
         tile.setAvalableTiles(new boolean[]{true,true,true});
     }
 

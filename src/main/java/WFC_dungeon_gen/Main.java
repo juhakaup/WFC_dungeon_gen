@@ -15,9 +15,9 @@ public class Main {
         int depth = 8;
         int numberOfTiles = ts.getNumberOfTiles();
         int[] tileWeights = ts.getTileWeights();
+        boolean[][][] adjacencyRules = ts.getAdjacencyRules();
         
-        Solver dungeon = new Solver(width, depth, numberOfTiles, tileWeights);
-        dungeon.printMaze();
+        Solver dungeon = new Solver(width, depth, numberOfTiles, tileWeights, adjacencyRules);
     }
     
 }
