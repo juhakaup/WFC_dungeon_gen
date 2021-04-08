@@ -51,12 +51,16 @@ public class Tile {
         return this.availableTiles;
     }
     
+    public int getFinalValue() {
+        return this.finalValue;
+    }
+    
     /**
      * Sets the array of possible outcomes for the tile
      * @param newTiles boolean array of possible outcomes
      * @return true if the tile changed false otherwise
      */
-    public boolean setAvalableTiles(boolean[] newTiles) {
+    public Boolean setAvalableTiles(boolean[] newTiles) {
         int newCardinality = cardinality(newTiles);
         if (this.numOfAvailableTiles != newCardinality) {
             this.numOfAvailableTiles = newCardinality;
@@ -64,8 +68,12 @@ public class Tile {
             this.entropy = calculateEntropy();
             this.sumOfPossibleWeights = sumOfPossibleWeights();
             
+            if (this.numOfAvailableTiles == 0) {
+                return null;
+            }
             this.displayedValue = String.valueOf(newCardinality);
             if (this.numOfAvailableTiles == 1) {
+                //System.out.print("tile " + this.row + "," + this.col + " collapsed to ");
                 this.collapsed = true;
                 for (int i=0;i<newTiles.length;i++) {
                     if(newTiles[i]) {
@@ -73,9 +81,12 @@ public class Tile {
                         break;
                     }
                 }
-                String at = "─│┐└·";
+                //String at = "│─┐└┘┌ █┼";
+                //String as = "-|jL'";
                 //this.displayedValue = String.valueOf(at.charAt(finalValue));
                 this.displayedValue = String.valueOf(finalValue);
+                //System.out.println(this.displayedValue);
+                //System.out.println("tile entropy " + this.entropy);
             }
             return true;
         }
@@ -117,7 +128,8 @@ public class Tile {
                 val++;
             }
         }
-        return Math.log(val)+this.randomNoise;
+        //return Math.log(val)+this.randomNoise;
+        return this.numOfAvailableTiles + this.randomNoise;
     }
     
     private int cardinality(boolean[] bool) {
