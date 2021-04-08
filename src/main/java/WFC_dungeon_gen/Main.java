@@ -44,8 +44,8 @@ public class Main {
         }
         
         //print tiles as characters
-        String tiles = "│─┐└┘┌ █┼"; // utf-8 characters
-        //String tiles = "|-++++ #+";   // characters for windows
+        //String tiles = "│─┐└┘┌ █┼"; // utf-8 characters
+        String tiles = "|-++++ #+";   // characters for windows
         for (int row = 0; row < depth; row++) {
             for (int col = 0; col < width; col++) {
                 System.out.print(String.valueOf(tiles.charAt(map[row][col])));
