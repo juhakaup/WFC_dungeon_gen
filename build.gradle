@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'jacoco'
     id 'checkstyle'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
 }
 
 compileJava.options.encoding = "UTF-8"
@@ -29,3 +30,10 @@ jacocoTestReport {
         html.enabled = true
     }
 }
+
+javafx {
+    version = "15.0.1"
+    modules = [ 'javafx.controls' ]
+}
+
+sourceCompatibility = 11
