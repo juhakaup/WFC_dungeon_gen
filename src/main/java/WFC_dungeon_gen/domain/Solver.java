@@ -10,7 +10,7 @@ import java.util.PriorityQueue;
  */
 public class Solver {
 
-    private Tile[][] dungeonMap;
+    private final Tile[][] dungeonMap;
     private final int numPossibleTiles;
     private final int[] tileWeights;
     private final boolean[][][] adjacencyRules;
@@ -19,7 +19,6 @@ public class Solver {
     private final MyRandom random;
     private PriorityQueue<TileParameters> entropyQueue;
     private PriorityQueue<TileParameters> propagatorQueue;
-    private final String tmpTiles = "│─┐└┘┌□█┼"; // utf-8 characters
 
     public Solver(int width, int depth, int numTiles, int[] weights, boolean[][][] rules) {
         this.numPossibleTiles = numTiles;
@@ -33,9 +32,9 @@ public class Solver {
         this.dungeonMap = initializeMap();
     }
 
-    public int[][] solveMaze() {
+    public int[][] generateMap() {
         while (true) {
-            Tile nextTile = chooseNextTile(this.entropyQueue, true);
+            Tile nextTile = selectNextTile(this.entropyQueue, true);
             if (nextTile == null) {
                 break;
             }
@@ -43,26 +42,25 @@ public class Solver {
             propagate(nextTile);
 
             while (true) {
-                nextTile = chooseNextTile(this.propagatorQueue, false);
+                nextTile = selectNextTile(this.propagatorQueue, false);
                 if (nextTile == null) {
                     break;
                 }
-                //System.out.println("chosen entropy " + nextTile.getEntropy());
-                //printMaze();
                 propagate(nextTile);
-                //System.out.println("propagate");
             }
-            //printMaze();
-            //System.out.println("collapse");
         }
-        return convertToTileIds();
+        return convertToTileIds(this.dungeonMap);
     }
 
-    private int[][] convertToTileIds() {
+    /**
+     * Converts given Tile array to integer array based on the final value of tile.
+     * @return 2d integer array
+     */
+    private int[][] convertToTileIds(Tile[][] map) {
         int[][] intMap = new int[this.depth][this.width];
         for (int col = 0; col < this.width; col++) {
             for (int row = 0; row < this.depth; row++) {
-                intMap[row][col] = dungeonMap[row][col].getFinalValue();
+                intMap[row][col] = map[row][col].getFinalValue();
             }
         }
         return intMap;
@@ -70,7 +68,6 @@ public class Solver {
 
     /**
      * Initializes the dungeon map with tiles
-     *
      * @return 2d array of Tiles
      */
     private Tile[][] initializeMap() {
@@ -110,8 +107,6 @@ public class Solver {
      * @param tileParam parameters containing coordinates for the tile
      */
     private void collapseTile(Tile tile) {
-        //System.out.println("collapse " + tile.getRow() + "," + tile.getCol());
-
         int sumWeight = tile.getSumOfPossibleWeights();
         if (sumWeight < 1) {
             sumWeight = 1;
@@ -139,10 +134,15 @@ public class Solver {
         );
     }
 
+    /**
+     * Spreading the change of available tiles to neighbouring tiles.
+     *
+     * @param propagator The source of propagation
+     */
     private void propagate(Tile propagator) {
         int row = propagator.getRow();
         int col = propagator.getCol();
-        
+
         boolean[] allowed = propagator.getAvailableTiles();
 
         if (row - 1 >= 0) {
@@ -159,17 +159,22 @@ public class Solver {
         }
     }
 
+    /**
+     *
+     * @param row Tile index row
+     * @param col Tile index col
+     * @param dir Direction of propagation
+     * @param propagatorTiles Tiles that the propagator can turn into
+     */
     private void reduce(int row, int col, Direction dir, boolean[] propagatorTiles) {
-        //System.out.println("reduce " + row + ", " + col);
         Tile neighbour = dungeonMap[row][col];
-
         if (neighbour.isCollapsed()) {
             return;
         }
-        
+
         boolean[] availableTiles = Arrays.copyOf(neighbour.getAvailableTiles(), numPossibleTiles);
-        boolean[] possibleTiles = getAvailableTilesFromRules(propagatorTiles, dir);
-        availableTiles = removeNotAvailable(availableTiles, possibleTiles);
+        boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
+        availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
 
         if (neighbour.setAvalableTiles(availableTiles)) {
             TileParameters param = new TileParameters(row, col, neighbour.getEntropy());
@@ -177,27 +182,15 @@ public class Solver {
             this.entropyQueue.add(param);
         }
     }
-    
-    private String debugOutput(boolean[] tiles) {
-        String str = "";
-        int[] bits = new int[tiles.length];
-        for (int i=0; i<tiles.length; i++) {
-            if(tiles[i]) {
-                str += this.tmpTiles.charAt(i);
-                bits[i] = 1;
-            }
-        }
-        return Arrays.toString(bits) + " " + str;
-    }
 
-    private boolean[] andTwoBooleanArrays(boolean[] boolA, boolean[] boolB) {
-        boolean[] newBool = new boolean[boolA.length];
-        for (int i = 0; i < boolA.length; i++) {
-            newBool[i] = (boolA[i] && boolB[i]);
-        }
-        return newBool;
-    }
-
+    /**
+     * Return a new boolean array with elements set to true if either element in
+     * A or B are true.
+     *
+     * @param boolA Boolean array A
+     * @param boolB Boolean array B
+     * @return New boolean array
+     */
     private boolean[] orTwoBooleanArrays(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[boolA.length];
         for (int i = 0; i < boolA.length; i++) {
@@ -206,7 +199,16 @@ public class Solver {
         return newBool;
     }
 
-    private boolean[] removeNotAvailable(boolean[] boolA, boolean[] boolB) {
+    /**
+     * Constructs a new boolean array with elements that are true in both
+     * arrays. This is done by copying false elements from B to A, so not a true
+     * intersection.
+     *
+     * @param boolA Array to be trimmed.
+     * @param boolB Trimming array.
+     * @return Boolean array
+     */
+    private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
         for (int i = 0; i < boolA.length; i++) {
             if (!boolB[i]) {
                 boolA[i] = false;
@@ -215,7 +217,15 @@ public class Solver {
         return boolA;
     }
 
-    private boolean[] getAvailableTilesFromRules(boolean[] tiles, Direction dir) {
+    /**
+     * Gathers all available tiles that a neighbouring tile can collapse to,
+     * based on adjacency rules.
+     *
+     * @param tiles Tiles available to the source of propagation.
+     * @param dir Direction of propagation.
+     * @return Boolean array of possible tiles.
+     */
+    private boolean[] gatherAvailableTiles(boolean[] tiles, Direction dir) {
         boolean[] newBool = new boolean[numPossibleTiles];
         for (int i = 0; i < numPossibleTiles; i++) {
             if (tiles[i]) {
@@ -227,11 +237,13 @@ public class Solver {
     }
 
     /**
-     * Returns the next uncollapsed tile with the lowest entropy value
+     * Returns next tile from queue
      *
-     * @return TileParameters containing coordinates
+     * @param queue Queue from where the tile is selected
+     * @param rejectCollapsed If true collapsed tiles are rejected
+     * @return Tile if available, null no valid tile can be found
      */
-    private Tile chooseNextTile(PriorityQueue<TileParameters> queue, boolean rejectCollapsed) {
+    private Tile selectNextTile(PriorityQueue<TileParameters> queue, boolean rejectCollapsed) {
         while (true) {
             if (!queue.isEmpty()) {
                 TileParameters params = queue.poll();
@@ -245,56 +257,4 @@ public class Solver {
         }
         return null;
     }
-
-    public void printMaze() {
-        for (int y = 0; y < this.depth; y++) {
-            for (int x = 0; x < this.width; x++) {
-                System.out.print(dungeonMap[y][x]);
-            }
-            System.out.println("");
-        }
-    }
 }
-
-// more complicated reducer
-//    private void reduceNew(int row, int col, Direction dir) {
-//        Tile tile = dungeonMap[row][col];
-//
-//        if (tile.isCollapsed()) {
-//            return;
-//        }
-//
-//        boolean[] availableTiles = Arrays.copyOf(tile.getAvailableTiles(), numPossibleTiles);
-//
-//        if (row - 1 >= 0) {
-//            boolean[] tilesUp = this.dungeonMap[row - 1][col].getAvailableTiles();
-//            boolean[] possibleTiles = getAvailableTilesFromRules(tilesUp, UP);
-//            availableTiles = removeNotAvailable(availableTiles, possibleTiles);
-//        }
-//        if (row + 1 < this.depth) {
-//            boolean[] tilesDown = this.dungeonMap[row + 1][col].getAvailableTiles();
-//            boolean[] possibleTiles = getAvailableTilesFromRules(tilesDown, DOWN);
-//            availableTiles = removeNotAvailable(availableTiles, possibleTiles);
-//        }
-//        if (col - 1 >= 0) {
-//            boolean[] tilesLeft = this.dungeonMap[row][col - 1].getAvailableTiles();
-//            boolean[] possibleTiles = getAvailableTilesFromRules(tilesLeft, LEFT);
-//            availableTiles = removeNotAvailable(availableTiles, possibleTiles);;
-//        }
-//        if (col + 1 < this.width) {
-//            boolean[] tilesDown = this.dungeonMap[row][col + 1].getAvailableTiles();
-//            boolean[] possibleTiles = getAvailableTilesFromRules(tilesDown, RIGHT);
-//            availableTiles = removeNotAvailable(availableTiles, possibleTiles);
-//        }
-//
-//        Boolean tileReduced = tile.setAvalableTiles(availableTiles);
-//        if (tileReduced == null) {
-//            System.out.println("propagation error");
-//        }
-//        if (tileReduced) {
-//            TileParameters param = new TileParameters(row, col, tile.getEntropy());
-//            this.propagatorQueue.add(param);
-//            this.entropyQueue.add(param);
-//        }
-//    }
-

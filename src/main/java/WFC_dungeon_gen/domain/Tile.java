@@ -1,7 +1,5 @@
 package WFC_dungeon_gen.domain;
 
-import java.util.Arrays;
-
 /**
  *
  * @author Juha Kauppinen
@@ -73,7 +71,6 @@ public class Tile {
             }
             this.displayedValue = String.valueOf(newCardinality);
             if (this.numOfAvailableTiles == 1) {
-                //System.out.print("tile " + this.row + "," + this.col + " collapsed to ");
                 this.collapsed = true;
                 for (int i=0;i<newTiles.length;i++) {
                     if(newTiles[i]) {
@@ -81,12 +78,7 @@ public class Tile {
                         break;
                     }
                 }
-                //String at = "│─┐└┘┌ █┼";
-                //String as = "-|jL'";
-                //this.displayedValue = String.valueOf(at.charAt(finalValue));
                 this.displayedValue = String.valueOf(finalValue);
-                //System.out.println(this.displayedValue);
-                //System.out.println("tile entropy " + this.entropy);
             }
             return true;
         }
@@ -132,6 +124,11 @@ public class Tile {
         return this.numOfAvailableTiles + this.randomNoise;
     }
     
+    /**
+     * The number of true elements in a boolean array.
+     * @param bool boolean array
+     * @return the count of true elements as integer
+     */
     private int cardinality(boolean[] bool) {
         int count = 0;
         for (boolean b : bool) {

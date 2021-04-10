@@ -67,7 +67,7 @@ public class GeneratorUi extends Application {
             this.tiles = tileSet.getTiles();
 
             Solver dungeon = new Solver(mapWidth, mapDepth, numberOfTiles, weights, rules);
-            this.map = dungeon.solveMaze();
+            this.map = dungeon.generateMap();
             outputMap();
         }
 
