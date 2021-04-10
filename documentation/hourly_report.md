@@ -22,6 +22,7 @@ date       | time | task |
 
 ## Week 3
 date	   | time | taks |
+-----------|------|------|
 2021-03-31 | 3h   | Propagation algorithm |
 2021-04-01 | 2h   | Propagation refactoring |
 2021-04-07 | 3h   | JSON loading |
