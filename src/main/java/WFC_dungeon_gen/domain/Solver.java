@@ -1,8 +1,8 @@
 package WFC_dungeon_gen.domain;
 
 import static WFC_dungeon_gen.domain.Direction.*;
+import WFC_dungeon_gen.util.TileQueue;
 import java.util.Arrays;
-import java.util.PriorityQueue;
 
 /**
  *
@@ -17,8 +17,8 @@ public class Solver {
     private final int width;
     private final int depth;
     private final MyRandom random;
-    private PriorityQueue<TileParameters> entropyQueue;
-    private PriorityQueue<TileParameters> propagatorQueue;
+    private TileQueue entropyQueue;
+    private TileQueue propagatorQueue;
 
     public Solver(int width, int depth, int numTiles, int[] weights, boolean[][][] rules) {
         this.numPossibleTiles = numTiles;
@@ -27,8 +27,8 @@ public class Solver {
         this.width = width;
         this.depth = depth;
         this.random = new MyRandom(12346);
-        this.entropyQueue = new PriorityQueue<>(width * depth);
-        this.propagatorQueue = new PriorityQueue<>(width * depth);
+        this.entropyQueue = new TileQueue(width * depth * 10);
+        this.propagatorQueue = new TileQueue(width * depth * 10);
         this.dungeonMap = initializeMap();
     }
 
@@ -79,7 +79,7 @@ public class Solver {
                 double noise = this.random.getNextEntropyNoiseValue();
                 Tile tile = new Tile(noise, this.tileWeights, row, col);
                 tile.setAvalableTiles(initialTiles);
-                entropyQueue.add(new TileParameters(row, col, tile.getEntropy()));
+                entropyQueue.add(tile);
                 tiles[row][col] = tile;
             }
         }
@@ -129,9 +129,7 @@ public class Solver {
         availableAfterCollapse[chosenTile] = true;
 
         tile.setAvalableTiles(availableAfterCollapse);
-        this.propagatorQueue.add(
-                new TileParameters(tile.getRow(), tile.getCol(), tile.getEntropy())
-        );
+        this.propagatorQueue.add(tile);
     }
 
     /**
@@ -177,9 +175,8 @@ public class Solver {
         availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
 
         if (neighbour.setAvalableTiles(availableTiles)) {
-            TileParameters param = new TileParameters(row, col, neighbour.getEntropy());
-            this.propagatorQueue.add(param);
-            this.entropyQueue.add(param);
+            this.propagatorQueue.add(neighbour);
+            this.entropyQueue.add(neighbour);
         }
     }
 
@@ -243,11 +240,10 @@ public class Solver {
      * @param rejectCollapsed If true collapsed tiles are rejected
      * @return Tile if available, null no valid tile can be found
      */
-    private Tile selectNextTile(PriorityQueue<TileParameters> queue, boolean rejectCollapsed) {
+    private Tile selectNextTile(TileQueue queue, boolean rejectCollapsed) {
         while (true) {
             if (!queue.isEmpty()) {
-                TileParameters params = queue.poll();
-                Tile tile = dungeonMap[params.getRow()][params.getCol()];
+                Tile tile = queue.poll();
                 if (tile.isCollapsed() != rejectCollapsed) {
                     return tile;
                 }
