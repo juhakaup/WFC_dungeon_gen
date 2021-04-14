@@ -8,11 +8,13 @@ import WFC_dungeon_gen.domain.Tile;
  */
 public class TileQueue {
 
-    private final Tile[] tiles;
+    private Tile[] tiles;
     private int lastEntry;
+    private int maxSize;
 
     public TileQueue(int n) {
         this.tiles = new Tile[n];
+        this.maxSize = n;
         this.lastEntry = 0;
     }
 
@@ -23,6 +25,9 @@ public class TileQueue {
      */
     public void add(Tile tile) {
         this.lastEntry++;
+        if (lastEntry == maxSize) {
+            increaseSize();
+        }
         double entropy = tile.getEntropy();
         int index = lastEntry;
 
@@ -100,5 +105,18 @@ public class TileQueue {
             return 0;
         }
         return 2 * index;
+    }
+    
+    /**
+     * Allocates a larger array for tiles
+     */
+    private void increaseSize() {
+        Tile[] newArray = new Tile[this.maxSize * 2];
+        
+        for (int i=1; i<this.maxSize; i++) {
+            newArray[i] = this.tiles[i];
+        }
+        this.tiles = newArray;
+        this.maxSize = this.maxSize * 2;
     }
 }
