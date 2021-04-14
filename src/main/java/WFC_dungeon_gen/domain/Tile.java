@@ -6,7 +6,6 @@ package WFC_dungeon_gen.domain;
  */
 public class Tile {
     private int finalValue;
-    private String displayedValue;
     private boolean[] availableTiles;
     private int numOfAvailableTiles;
     private final double randomNoise;
@@ -18,8 +17,7 @@ public class Tile {
     private int sumOfPossibleWeights;
     
     public Tile(double noise, int[] weights, int row, int col) {
-        this.finalValue = -1;
-        this.displayedValue = "/";
+        this.finalValue = 6;
         this.randomNoise = noise;
         this.tileWeights = weights;
         this.row = row;
@@ -30,7 +28,7 @@ public class Tile {
     
     @Override
     public String toString(){
-        return String.valueOf(this.displayedValue);
+        return String.valueOf(this.finalValue);
     }
     
     public int getRow() {
@@ -69,7 +67,6 @@ public class Tile {
             if (this.numOfAvailableTiles == 0) {
                 return null;
             }
-            this.displayedValue = String.valueOf(newCardinality);
             if (this.numOfAvailableTiles == 1) {
                 this.collapsed = true;
                 for (int i=0;i<newTiles.length;i++) {
@@ -78,7 +75,6 @@ public class Tile {
                         break;
                     }
                 }
-                this.displayedValue = String.valueOf(finalValue);
             }
             return true;
         }

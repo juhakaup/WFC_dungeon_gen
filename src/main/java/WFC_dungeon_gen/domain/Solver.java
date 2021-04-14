@@ -10,15 +10,15 @@ import java.util.Arrays;
  */
 public class Solver {
 
-    private final Tile[][] dungeonMap;
+    private Tile[][] dungeonMap;
     private final int numPossibleTiles;
     private final int[] tileWeights;
     private final boolean[][][] adjacencyRules;
     private final int width;
     private final int depth;
     private final MyRandom random;
-    private TileQueue entropyQueue;
-    private TileQueue propagatorQueue;
+    private TileQueue entropyQueue = null;
+    private TileQueue propagatorQueue = null;
 
     public Solver(int width, int depth, int numTiles, int[] weights, boolean[][][] rules) {
         this.numPossibleTiles = numTiles;
@@ -27,11 +27,20 @@ public class Solver {
         this.width = width;
         this.depth = depth;
         this.random = new MyRandom(12346);
-        this.entropyQueue = new TileQueue(width * depth * 10);
-        this.propagatorQueue = new TileQueue(width * depth * 10);
+        this.dungeonMap = null;
+        initMap();
+    }
+    
+    public final void initMap() {
+        this.entropyQueue = new TileQueue(this.width * this.depth);
+        this.propagatorQueue = new TileQueue(this.width * this.depth);
         this.dungeonMap = initializeMap();
     }
 
+    /**
+     * 
+     * @return 
+     */
     public int[][] generateMap() {
         while (true) {
             Tile nextTile = selectNextTile(this.entropyQueue, true);
@@ -40,7 +49,7 @@ public class Solver {
             }
             collapseTile(nextTile);
             propagate(nextTile);
-
+            
             while (true) {
                 nextTile = selectNextTile(this.propagatorQueue, false);
                 if (nextTile == null) {
@@ -50,6 +59,18 @@ public class Solver {
             }
         }
         return convertToTileIds(this.dungeonMap);
+    }
+    
+    public void step() {
+        Tile nextTile = selectNextTile(this.entropyQueue, true);
+        if (nextTile != null) {   
+            collapseTile(nextTile);
+            propagate(nextTile);
+        }
+    }
+    
+    public int[][] getMap() {
+        return convertToTileIds(dungeonMap);
     }
 
     /**
@@ -158,11 +179,12 @@ public class Solver {
     }
 
     /**
-     *
-     * @param row Tile index row
-     * @param col Tile index col
+     * Reducec the possible outcomes of a tile based on the available tiles in the
+     * propagator tiles and propagation direction.
+     * @param row Tile position
+     * @param col Tile position
      * @param dir Direction of propagation
-     * @param propagatorTiles Tiles that the propagator can turn into
+     * @param propagatorTiles Tiles available to the propagator
      */
     private void reduce(int row, int col, Direction dir, boolean[] propagatorTiles) {
         Tile neighbour = dungeonMap[row][col];
@@ -174,7 +196,12 @@ public class Solver {
         boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
         availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
 
-        if (neighbour.setAvalableTiles(availableTiles)) {
+        Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
+        if (tileChanged == null) {
+            System.out.println("Propagation error");
+            // TODO graceful handling of contradiction
+        }
+        else if (tileChanged) {
             this.propagatorQueue.add(neighbour);
             this.entropyQueue.add(neighbour);
         }
