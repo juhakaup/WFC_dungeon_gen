@@ -4,6 +4,7 @@ plugins {
     id 'jacoco'
     id 'checkstyle'
     id 'org.openjfx.javafxplugin' version '0.0.9'
+    id "com.github.johnrengelman.shadow" version "6.1.0"
 }
 
 compileJava.options.encoding = "UTF-8"
@@ -20,6 +21,12 @@ dependencies {
 
 mainClassName = 'WFC_dungeon_gen.Main'
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'WFC_dungeon_gen.Main'
+    }
+}
+
 run {
     standardInput = System.in
 }
@@ -28,6 +35,16 @@ jacocoTestReport {
     reports {
         xml.enabled = true
         html.enabled = true
+    }
+
+    afterEvaluate {
+        classDirectories.from = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude:  [
+                    '**/ui/*','**/WFC_dungeon_gen/*.*'
+                    
+                    
+            ])
+        })
     }
 }
 

@@ -1,48 +1,79 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package WFC_dungeon_gen.domain;
 
-import org.junit.After;
-import org.junit.AfterClass;
+import WFC_dungeon_gen.dao.TileSetTestData;
+import java.io.FileNotFoundException;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
  *
- * @author scyti
+ * @author Juha Kauppinen
  */
 public class SolverTest {
-    
+
+    private Solver map;
+    private int width;
+    private int depth;
+    private TileSet tileSet;
+
     public SolverTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
+        this.depth = 5;
+        this.width = 5;
+        try {
+            tileSet = new TileSetTestData().loadTileSet("hello");
+        } catch (FileNotFoundException ex) {
+            System.out.println("error loading data");
+        }
     }
 
-    /**
-     * Test of printMaze method, of class Solver.
-     */
-    @Test
-    public void testPrintMaze() {
-        assertEquals(true, true);
+    @Before
+    public void setUp() {
+        int numTiles = tileSet.getNumberOfTiles();
+        boolean[][][] rules = tileSet.getAdjacencyRules();
+        int[] weights = tileSet.getTileWeights();
+        this.map = new Solver(this.width, this.depth, numTiles, weights, rules);
     }
-    
+
+    @Test
+    public void mapInitializesToRightDimension() {
+        int[][] intMap = this.map.getMap();
+        assertEquals(this.width, intMap[0].length);
+        assertEquals(this.depth, intMap.length);
+    }
+
+    @Test
+    public void mapIsInitializedToMinusOne() {
+        this.map.initMap();
+        int[][] intMap = this.map.getMap();
+        for (int i = 0; i < this.depth; i++) {
+            for (int j = 0; j < this.width; j++) {
+                assertEquals(-1, intMap[i][j]);
+            }
+        }
+    }
+
+    @Test
+    public void tilesAreSelectedRandomly() {
+        int sum = 0;
+        int cycles = 1000;
+
+        for (int x = 0; x < cycles; x++) {
+            map.initMap();
+            map.step();
+            int[][] intMap = map.getMap();
+
+            for (int i = 0; i < depth; i++) {
+                for (int j = 0; j < width; j++) {
+                    if (intMap[i][j] != -1) {
+                        int value = i * depth + j;
+                        sum += value;
+                    }
+                }
+            }
+        }
+        int average = sum / cycles;
+        assertEquals(average, (width * depth) / 2, 2);
+    }
+
 }

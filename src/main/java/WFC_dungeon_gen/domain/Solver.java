@@ -1,5 +1,6 @@
 package WFC_dungeon_gen.domain;
 
+import WFC_dungeon_gen.util.MyRandom;
 import static WFC_dungeon_gen.domain.Direction.*;
 import WFC_dungeon_gen.util.TileQueue;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ public class Solver {
     private final MyRandom random;
     private TileQueue entropyQueue = null;
     private TileQueue propagatorQueue = null;
+    private int rounds;
 
     public Solver(int width, int depth, int numTiles, int[] weights, boolean[][][] rules) {
         this.numPossibleTiles = numTiles;
@@ -26,6 +28,7 @@ public class Solver {
         this.adjacencyRules = rules;
         this.width = width;
         this.depth = depth;
+        this.rounds = 0;
         this.random = new MyRandom(12346);
         this.dungeonMap = null;
         initMap();
@@ -58,6 +61,7 @@ public class Solver {
                 propagate(nextTile);
             }
         }
+        this.rounds = 0;
         return convertToTileIds(this.dungeonMap);
     }
     
@@ -198,8 +202,9 @@ public class Solver {
 
         Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
         if (tileChanged == null) {
-            System.out.println("Propagation error");
-            // TODO graceful handling of contradiction
+            System.out.print("Propagation error, retry round " + this.rounds++ + "\r");
+            initMap();
+            generateMap();
         }
         else if (tileChanged) {
             this.propagatorQueue.add(neighbour);

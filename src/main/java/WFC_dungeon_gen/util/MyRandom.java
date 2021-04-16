@@ -1,4 +1,4 @@
-package WFC_dungeon_gen.domain;
+package WFC_dungeon_gen.util;
 
 import java.util.Random;
 

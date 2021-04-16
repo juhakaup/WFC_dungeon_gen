@@ -17,7 +17,7 @@ public class Tile {
     private int sumOfPossibleWeights;
     
     public Tile(double noise, int[] weights, int row, int col) {
-        this.finalValue = 6;
+        this.finalValue = -1;
         this.randomNoise = noise;
         this.tileWeights = weights;
         this.row = row;

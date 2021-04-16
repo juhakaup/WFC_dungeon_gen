@@ -6,6 +6,7 @@ package WFC_dungeon_gen.ui;
  */
 import WFC_dungeon_gen.dao.TileSetDao;
 import WFC_dungeon_gen.dao.TileSetJsonDao;
+import WFC_dungeon_gen.dao.TileSetTestData;
 import WFC_dungeon_gen.domain.Solver;
 import WFC_dungeon_gen.domain.TileSet;
 import java.io.FileNotFoundException;
@@ -119,7 +120,11 @@ public class GeneratorUi extends Application {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
                     for (int i = 0; i < this.tileWidth; i++) {
+                        if (tileNum == -1) {
+                            output += " ";
+                        } else {
                         output += (tiles[tileNum][j][i]);
+                        }
                     }
                 }
                 output += "\n";
