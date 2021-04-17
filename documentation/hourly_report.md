@@ -21,7 +21,7 @@ date       | time | task |
 2021-03-28 | 1h   | Update documentation |
 
 ## Week 3
-date	   | time | taks |
+date	   | time | task |
 -----------|------|------|
 2021-03-31 | 3h   | Propagation algorithm |
 2021-04-01 | 2h   | Propagation refactoring |
@@ -29,3 +29,12 @@ date	   | time | taks |
 2021-04-08 | 3h   | Debugging propagation, research overlapping model and tileset representation |
 2021-04-08 | 3h   | Simple javafx output window |
 2021-04-09 | 2h   | Code cleanup. Update documentation |
+
+## Week 4
+date       | time | task |
+-----------|------|------|
+2021-04-13 | 4h   | Priority queue implementation and integration |
+2021-04-14 | 2h   | Add controls to ui |
+2021-04-15 | 2h   | Somewhat better handling of contradictions, jar build settings |
+2021-04-16 | 4h   | Write some tests. Refactoring and rearraigned code. Created a more elaborate tilese. |
+2021-04-17 | 2h   | Documentation. Continue working on the new tileset. |
