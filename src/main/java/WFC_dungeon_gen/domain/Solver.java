@@ -21,16 +21,20 @@ public class Solver {
     private TileQueue entropyQueue = null;
     private TileQueue propagatorQueue = null;
     private int rounds;
+    private boolean[][] borderTiles;
+    private final boolean maintainBorders;
 
-    public Solver(int width, int depth, int numTiles, int[] weights, boolean[][][] rules) {
-        this.numPossibleTiles = numTiles;
-        this.tileWeights = weights;
-        this.adjacencyRules = rules;
+    public Solver(int width, int depth, TileSet tileSet, boolean maintainBorders) {
+        this.numPossibleTiles = tileSet.getNumberOfTiles();
+        this.tileWeights = tileSet.getTileWeights();
+        this.adjacencyRules = tileSet.getAdjacencyRules();
         this.width = width;
         this.depth = depth;
         this.rounds = 0;
+        this.maintainBorders = maintainBorders;
         this.random = new MyRandom(12346);
         this.dungeonMap = null;
+        this.borderTiles = tileSet.getBorderTiles();
         initMap();
     }
     
@@ -38,12 +42,11 @@ public class Solver {
         this.entropyQueue = new TileQueue(this.width * this.depth);
         this.propagatorQueue = new TileQueue(this.width * this.depth);
         this.dungeonMap = initializeMap();
+        if (maintainBorders) {
+            addBorder();
+        }
     }
 
-    /**
-     * 
-     * @return 
-     */
     public int[][] generateMap() {
         while (true) {
             Tile nextTile = selectNextTile(this.entropyQueue, true);
@@ -109,6 +112,64 @@ public class Solver {
             }
         }
         return tiles;
+    }
+    
+        
+    public void addBorder() {
+//        boolean[] boarderTileDown = new boolean[this.numPossibleTiles];
+//        boarderTileDown[0] = true;
+//        boarderTileDown[3] = true;
+//        boarderTileDown[4] = true;
+//        boarderTileDown[6] = true;
+//        boarderTileDown[10] = true;
+//        boarderTileDown[18] = true;
+//        boarderTileDown[20] = true;
+//        boarderTileDown[23] = true;
+//        
+//        boolean[] borderTileUp = new boolean[this.numPossibleTiles];
+//        borderTileUp[0] = true;
+//        borderTileUp[1] = true;
+//        borderTileUp[2] = true;
+//        borderTileUp[6] = true;
+//        borderTileUp[8] = true;
+//        borderTileUp[16] = true;
+//        borderTileUp[21] = true;
+//        borderTileUp[22] = true;
+//        
+//        boolean[] borderTileLeft = new boolean[this.numPossibleTiles];
+//        borderTileLeft[0] = true;
+//        borderTileLeft[1] = true;
+//        borderTileLeft[4] = true;
+//        borderTileLeft[5] = true;
+//        borderTileLeft[7] = true;
+//        borderTileLeft[15] = true;
+//        borderTileLeft[20] = true;
+//        borderTileLeft[21] = true;
+//        
+//        
+//        boolean[] borderTileRight = new boolean[this.numPossibleTiles];
+//        borderTileRight[0] = true;
+//        borderTileRight[2] = true;
+//        borderTileRight[3] = true;
+//        borderTileRight[5] = true;
+//        borderTileRight[9] = true;
+//        borderTileRight[17] = true;
+//        borderTileRight[22] = true;
+//        borderTileRight[23] = true;
+        
+        for (int i=1; i<this.width-1; i++) {
+            dungeonMap[0][i].setAvalableTiles(this.borderTiles[0]);
+            dungeonMap[this.depth-1][i].setAvalableTiles(borderTiles[2]);
+            propagatorQueue.add(dungeonMap[0][i]);  
+            propagatorQueue.add(dungeonMap[this.depth - 1][i]);
+        }
+        
+        for (int j=1; j<this.depth-1; j++) {
+            dungeonMap[j][0].setAvalableTiles(borderTiles[3]);
+            dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[1]);
+            propagatorQueue.add(dungeonMap[j][0]);  
+            propagatorQueue.add(dungeonMap[j][this.width - 1]);
+        }
     }
 
     /**

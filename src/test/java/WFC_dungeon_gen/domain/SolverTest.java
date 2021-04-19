@@ -29,10 +29,7 @@ public class SolverTest {
 
     @Before
     public void setUp() {
-        int numTiles = tileSet.getNumberOfTiles();
-        boolean[][][] rules = tileSet.getAdjacencyRules();
-        int[] weights = tileSet.getTileWeights();
-        this.map = new Solver(this.width, this.depth, numTiles, weights, rules);
+        this.map = new Solver(this.width, this.depth, this.tileSet, false);
     }
 
     @Test

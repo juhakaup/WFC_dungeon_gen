@@ -40,13 +40,17 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.from = files(classDirectories.files.collect {
             fileTree(dir: it, exclude:  [
-                    '**/ui/*','**/WFC_dungeon_gen/*.*'
-                    
-                    
+                '**/ui/*','**/WFC_dungeon_gen/*.*'
             ])
         })
     }
 }
+
+ConfigurableFileTree tree = fileTree(dir: 'src/main/java')
+tree.exclude '**/ui/*'
+checkstyleMain {
+    source = tree 
+} 
 
 javafx {
     version = "15.0.1"

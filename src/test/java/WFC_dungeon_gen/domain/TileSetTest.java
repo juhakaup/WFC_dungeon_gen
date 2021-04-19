@@ -5,10 +5,7 @@ import WFC_dungeon_gen.dao.TileSetTestData;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -22,38 +19,27 @@ public class TileSetTest {
     public TileSetTest() {
         TileSetDao dao = new TileSetTestData();
         try {
-            tileSet = dao.loadTileSet("nonTrivial");
+            tileSet = dao.loadTileSet("nontrivial");
         } catch (FileNotFoundException ex) {
             Logger.getLogger(TileSetTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
     @Before
     public void setUp() {
     }
-    
-    @After
-    public void tearDown() {
-    }
+
 
     /**
      * Test of getTiles method, of class TileSet.
      */
     @Test
     public void testGetTiles() {
-        char[][][] tiles = tileSet.getTiles();
-        char[][] singleTile = new char[][]{
-            {'.', 'H', '.'},
-            {'.', 'H', '.'},
-            {'.', 'H', '.'}
+        String[][] tiles = tileSet.getTiles();
+        String[] singleTile = new String[]{
+            ".H.",
+            ".H.",
+            ".H."
         };
         
         assertArrayEquals(singleTile, tiles[0]);

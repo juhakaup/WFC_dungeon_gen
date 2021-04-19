@@ -12,6 +12,7 @@ import WFC_dungeon_gen.domain.TileSet;
 import java.io.FileNotFoundException;
 import javafx.stage.Stage;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -31,8 +32,7 @@ public class GeneratorUi extends Application {
     private int mapWidth;
     private int mapDepth;
     private int[][] map;
-    private char[][][] tiles;
-    private int[] tileWeights;
+    private String[][] tiles;
     private boolean setLoaded;
     private int tileWidth;
     private Solver dungeon;
@@ -40,9 +40,9 @@ public class GeneratorUi extends Application {
     @Override
     public void init() {
         this.dao = new TileSetJsonDao();
-        this.setLoaded = loadTileSet("./data/dungeon_trivial.JSON");
-        this.mapWidth = 20;
-        this.mapDepth = 15;
+        this.setLoaded = loadTileSet("./data/dungeon_basic.JSON");
+        this.mapWidth = 35;
+        this.mapDepth = 20;
     }
 
     @Override
@@ -60,12 +60,12 @@ public class GeneratorUi extends Application {
         btn_clear.setOnAction(e -> {
             clear();
         });
-        
+
         Button btn_step = new Button("Step");
         btn_step.setOnAction(e -> {
             step();
         });
-        
+
         btn_pane.getChildren().add(btn_generate);
         btn_pane.getChildren().add(btn_clear);
         btn_pane.getChildren().add(btn_step);
@@ -74,17 +74,16 @@ public class GeneratorUi extends Application {
         this.textArea = new TextArea();
 
         textArea.setPrefColumnCount(mapWidth * this.tileWidth);
-        textArea.setPrefRowCount(mapDepth * this.tileWidth);
-        textArea.setFont(Font.loadFont("file:data/square.ttf", 16));
+        textArea.setPrefRowCount((int)(mapDepth*1.2) * this.tileWidth);
+        textArea.setFont(Font.loadFont("file:data/square.ttf", 6));
 
         vbox.getChildren().add(btn_pane);
         vbox.getChildren().add(textArea);
+        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(0, 20, 10, 20)); 
 
         if (setLoaded) {
-            int numberOfTiles = this.tileSet.getNumberOfTiles();
-            boolean[][][] rules = this.tileSet.getAdjacencyRules();
-
-            this.dungeon = new Solver(mapWidth, mapDepth, numberOfTiles, this.tileWeights, rules);
+            this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
             generateMap();
             displayMap();
         }
@@ -95,17 +94,19 @@ public class GeneratorUi extends Application {
     }
 
     private void generateMap() {
+        //this.setLoaded = loadTileSet("./data/dungeon_basic.JSON");
+        //this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
         this.dungeon.initMap();
         this.map = this.dungeon.generateMap();
         displayMap();
     }
-    
+
     private void clear() {
         this.dungeon.initMap();
         this.map = dungeon.getMap();
         displayMap();
     }
-    
+
     private void step() {
         this.dungeon.step();
         this.map = dungeon.getMap();
@@ -119,13 +120,13 @@ public class GeneratorUi extends Application {
             for (int j = 0; j < this.tileWidth; j++) {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
-                    for (int i = 0; i < this.tileWidth; i++) {
-                        if (tileNum == -1) {
-                            output += " ";
-                        } else {
-                        output += (tiles[tileNum][j][i]);
-                        }
+
+                    if (tileNum == -1) {
+                        output += "   ";
+                    } else {
+                        output += this.tiles[tileNum][j];
                     }
+
                 }
                 output += "\n";
             }
@@ -137,7 +138,6 @@ public class GeneratorUi extends Application {
         try {
             this.tileSet = this.dao.loadTileSet(file);
             this.tiles = tileSet.getTiles();
-            this.tileWeights = tileSet.getTileWeights();
             this.tileWidth = this.tiles[0].length;
             return true;
         } catch (FileNotFoundException ex) {

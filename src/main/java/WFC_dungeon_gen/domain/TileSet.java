@@ -8,12 +8,13 @@ import static WFC_dungeon_gen.domain.Direction.*;
  */
 public class TileSet {
 
-    private final char[][][] tiles;
+    private final String[][] tiles;
     private final String[] allowedTilesUp;
     private final String[] allowedTilesRight;
     private final String[] allowedTilesDown;
     private final String[] allowedTilesLeft;
     private final int[] tileWeights;
+    private final int[][] borderTiles;
 
     public TileSet() {
         this.tiles = null;
@@ -22,9 +23,10 @@ public class TileSet {
         this.allowedTilesDown = null;
         this.allowedTilesLeft = null;
         this.tileWeights = null;
+        this.borderTiles = null;
     }
 
-    public char[][][] getTiles() {
+    public String[][] getTiles() {
         return this.tiles;
     }
 
@@ -34,6 +36,21 @@ public class TileSet {
 
     public int[] getTileWeights() {
         return this.tileWeights;
+    }
+    
+    public boolean[][] getBorderTiles() {
+        boolean[] up = new boolean[this.tiles.length];
+        boolean[] right = new boolean[this.tiles.length];
+        boolean[] down = new boolean[this.tiles.length];
+        boolean[] left = new boolean[this.tiles.length];
+        boolean[][] borders = new boolean[][]{up,right,down,left};
+        
+        for (int i=0; i<4; i++) {
+            for (int tile : this.borderTiles[i]) {
+                borders[i][tile] = true;
+            }
+        }
+        return borders;
     }
 
     public boolean[][][] getAdjacencyRules() {
