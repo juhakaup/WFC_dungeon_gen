@@ -11,5 +11,6 @@
 * [Week 2](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report2.md)
 * [Week 3](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report3.md)
 * [Week 4](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report4.md)
+* [Week 5](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report5.md)
 
 ### [Hourly report](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/hourly_report.md)
