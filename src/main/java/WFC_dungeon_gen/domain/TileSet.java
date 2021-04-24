@@ -15,6 +15,8 @@ public class TileSet {
     private final String[] allowedTilesLeft;
     private final int[] tileWeights;
     private final int[][] borderTiles;
+    private final Type[] tileTypes;
+    private final boolean[][] connections;
 
     public TileSet() {
         this.tiles = null;
@@ -24,6 +26,8 @@ public class TileSet {
         this.allowedTilesLeft = null;
         this.tileWeights = null;
         this.borderTiles = null;
+        this.tileTypes = null;
+        this.connections = null;
     }
 
     public String[][] getTiles() {
@@ -36,6 +40,14 @@ public class TileSet {
 
     public int[] getTileWeights() {
         return this.tileWeights;
+    }
+    
+    public Type[] getTileTypes() {
+        return this.tileTypes;
+    }
+    
+    public boolean[][] getConnections() {
+        return this.connections;
     }
     
     public boolean[][] getBorderTiles() {

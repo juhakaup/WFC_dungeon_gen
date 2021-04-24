@@ -9,6 +9,7 @@ import WFC_dungeon_gen.dao.TileSetJsonDao;
 import WFC_dungeon_gen.dao.TileSetTestData;
 import WFC_dungeon_gen.domain.Solver;
 import WFC_dungeon_gen.domain.TileSet;
+import WFC_dungeon_gen.util.Validator;
 import java.io.FileNotFoundException;
 import javafx.stage.Stage;
 import javafx.application.Application;
@@ -19,6 +20,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+
 
 public class GeneratorUi extends Application {
 
@@ -36,13 +38,16 @@ public class GeneratorUi extends Application {
     private boolean setLoaded;
     private int tileWidth;
     private Solver dungeon;
+    private Validator validator;
+    private String file;
 
     @Override
     public void init() {
         this.dao = new TileSetJsonDao();
-        this.setLoaded = loadTileSet("./data/dungeon_basic.JSON");
-        this.mapWidth = 35;
-        this.mapDepth = 20;
+        this.file = "./data/dungeon_trivial_2.JSON";
+        this.setLoaded = loadTileSet(this.file);
+        this.mapWidth = 15;
+        this.mapDepth = 10;
     }
 
     @Override
@@ -75,7 +80,7 @@ public class GeneratorUi extends Application {
 
         textArea.setPrefColumnCount(mapWidth * this.tileWidth);
         textArea.setPrefRowCount((int)(mapDepth*1.2) * this.tileWidth);
-        textArea.setFont(Font.loadFont("file:data/square.ttf", 6));
+        textArea.setFont(Font.loadFont("file:data/square.ttf", 12));
 
         vbox.getChildren().add(btn_pane);
         vbox.getChildren().add(textArea);
@@ -85,7 +90,6 @@ public class GeneratorUi extends Application {
         if (setLoaded) {
             this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
             generateMap();
-            displayMap();
         }
 
         Scene scene = new Scene(vbox);
@@ -94,10 +98,12 @@ public class GeneratorUi extends Application {
     }
 
     private void generateMap() {
-        //this.setLoaded = loadTileSet("./data/dungeon_basic.JSON");
-        //this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
+        this.setLoaded = loadTileSet(this.file);
+        this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
         this.dungeon.initMap();
         this.map = this.dungeon.generateMap();
+        this.validator = new Validator(this.map, this.tileSet);
+        validateMap();
         displayMap();
     }
 
@@ -112,21 +118,23 @@ public class GeneratorUi extends Application {
         this.map = dungeon.getMap();
         displayMap();
     }
+    
+    private void validateMap() {
+        this.validator.canTraverse(0, 0, 1, 1);   
+    }
 
     private void displayMap() {
         String output = "";
-
         for (int row = 0; row < this.mapDepth; row++) {
             for (int j = 0; j < this.tileWidth; j++) {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
 
                     if (tileNum == -1) {
-                        output += "   ";
+                        output += "***";//this.tiles[0][0];
                     } else {
                         output += this.tiles[tileNum][j];
                     }
-
                 }
                 output += "\n";
             }

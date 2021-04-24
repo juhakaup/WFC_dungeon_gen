@@ -14,7 +14,7 @@ public class MyRandom {
     }
     
     public double getNextEntropyNoiseValue() {
-        return this.random.nextDouble();
+        return this.random.nextDouble()/10;
     }
     
     public int getNextIntInRange(int max) {

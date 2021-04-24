@@ -50,6 +50,11 @@ public class SolverTest {
         }
     }
 
+    /**
+     * Initializes new map and does one step, then finds the tile that was collapsed.
+     * Collapsed tile's positions in the array are summed up if they are random 
+     * this sum should be close to half way.
+     */
     @Test
     public void tilesAreSelectedRandomly() {
         int sum = 0;

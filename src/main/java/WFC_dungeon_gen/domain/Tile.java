@@ -15,6 +15,7 @@ public class Tile {
     private final int row;
     private final int[] tileWeights;
     private int sumOfPossibleWeights;
+    private int sumOfWeights;
     
     public Tile(double noise, int[] weights, int row, int col) {
         this.finalValue = -1;
@@ -24,6 +25,7 @@ public class Tile {
         this.col = col;
         this.collapsed = false;
         this.availableTiles = new boolean[0];
+        this.sumOfWeights = 0;
     }
     
     @Override
@@ -61,8 +63,12 @@ public class Tile {
         if (this.numOfAvailableTiles != newCardinality) {
             this.numOfAvailableTiles = newCardinality;
             this.availableTiles = newTiles;
-            this.entropy = calculateEntropy();
             this.sumOfPossibleWeights = sumOfPossibleWeights();
+            
+            if (this.sumOfWeights == 0) {
+                this.sumOfWeights = this.sumOfPossibleWeights;
+            }
+            this.entropy = calculateEntropy();
             
             if (this.numOfAvailableTiles == 0) {
                 return null;
@@ -110,14 +116,16 @@ public class Tile {
      * @return 
      */
     private double calculateEntropy() {
-        int val = 0;
+        int i = 0;
+        double sum = 0;
         for (boolean b : this.availableTiles) {
             if (b) {
-                val++;
+                double prob = (double)this.tileWeights[i] / this.sumOfWeights;
+                sum += (prob * Math.log(1 / prob));
+                i++;
             }
         }
-        //return Math.log(val)+this.randomNoise;
-        return this.numOfAvailableTiles + this.randomNoise;
+        return sum + this.randomNoise;//this.numOfAvailableTiles + this.randomNoise;
     }
     
     /**

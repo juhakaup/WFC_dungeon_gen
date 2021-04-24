@@ -21,7 +21,7 @@ public class Solver {
     private TileQueue entropyQueue = null;
     private TileQueue propagatorQueue = null;
     private int rounds;
-    private boolean[][] borderTiles;
+    private final boolean[][] borderTiles;
     private final boolean maintainBorders;
 
     public Solver(int width, int depth, TileSet tileSet, boolean maintainBorders) {
@@ -47,7 +47,7 @@ public class Solver {
         }
     }
 
-    public int[][] generateMap() {
+    public int[][] generateMap() {     
         while (true) {
             Tile nextTile = selectNextTile(this.entropyQueue, true);
             if (nextTile == null) {
@@ -72,6 +72,13 @@ public class Solver {
         Tile nextTile = selectNextTile(this.entropyQueue, true);
         if (nextTile != null) {   
             collapseTile(nextTile);
+            propagate(nextTile);
+        }
+        while (true) {
+            nextTile = selectNextTile(this.propagatorQueue, false);
+            if (nextTile == null) {
+                break;
+            }
             propagate(nextTile);
         }
     }
@@ -115,48 +122,7 @@ public class Solver {
     }
     
         
-    public void addBorder() {
-//        boolean[] boarderTileDown = new boolean[this.numPossibleTiles];
-//        boarderTileDown[0] = true;
-//        boarderTileDown[3] = true;
-//        boarderTileDown[4] = true;
-//        boarderTileDown[6] = true;
-//        boarderTileDown[10] = true;
-//        boarderTileDown[18] = true;
-//        boarderTileDown[20] = true;
-//        boarderTileDown[23] = true;
-//        
-//        boolean[] borderTileUp = new boolean[this.numPossibleTiles];
-//        borderTileUp[0] = true;
-//        borderTileUp[1] = true;
-//        borderTileUp[2] = true;
-//        borderTileUp[6] = true;
-//        borderTileUp[8] = true;
-//        borderTileUp[16] = true;
-//        borderTileUp[21] = true;
-//        borderTileUp[22] = true;
-//        
-//        boolean[] borderTileLeft = new boolean[this.numPossibleTiles];
-//        borderTileLeft[0] = true;
-//        borderTileLeft[1] = true;
-//        borderTileLeft[4] = true;
-//        borderTileLeft[5] = true;
-//        borderTileLeft[7] = true;
-//        borderTileLeft[15] = true;
-//        borderTileLeft[20] = true;
-//        borderTileLeft[21] = true;
-//        
-//        
-//        boolean[] borderTileRight = new boolean[this.numPossibleTiles];
-//        borderTileRight[0] = true;
-//        borderTileRight[2] = true;
-//        borderTileRight[3] = true;
-//        borderTileRight[5] = true;
-//        borderTileRight[9] = true;
-//        borderTileRight[17] = true;
-//        borderTileRight[22] = true;
-//        borderTileRight[23] = true;
-        
+    public void addBorder() {    
         for (int i=1; i<this.width-1; i++) {
             dungeonMap[0][i].setAvalableTiles(this.borderTiles[0]);
             dungeonMap[this.depth-1][i].setAvalableTiles(borderTiles[2]);
@@ -169,6 +135,29 @@ public class Solver {
             dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[1]);
             propagatorQueue.add(dungeonMap[j][0]);  
             propagatorQueue.add(dungeonMap[j][this.width - 1]);
+        }
+        
+        boolean[] topLeft = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[3]);
+        boolean[] topRight = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[1]);
+        boolean[] bottomLeft = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[3]);
+        boolean[] bottomRight = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[1]);
+        
+        dungeonMap[0][0].setAvalableTiles(topLeft);
+        dungeonMap[0][this.width-1].setAvalableTiles(topRight);
+        dungeonMap[this.depth-1][0].setAvalableTiles(bottomLeft);
+        dungeonMap[this.depth-1][this.width-1].setAvalableTiles(bottomRight);
+        
+        propagatorQueue.add(dungeonMap[0][0]);  
+        propagatorQueue.add(dungeonMap[0][this.width - 1]);
+        propagatorQueue.add(dungeonMap[this.depth - 1][0]);  
+        propagatorQueue.add(dungeonMap[this.depth - 1][this.width - 1]);
+        
+        while (true) {
+            Tile nextTile = selectNextTile(this.propagatorQueue, false);
+            if (nextTile == null) {
+                break;
+            }
+            propagate(nextTile);
         }
     }
 
@@ -219,7 +208,7 @@ public class Solver {
     }
 
     /**
-     * Spreading the change of available tiles to neighbouring tiles.
+     * Spreading the change of available tiles to neighboring tiles.
      *
      * @param propagator The source of propagation
      */
@@ -263,7 +252,7 @@ public class Solver {
 
         Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
         if (tileChanged == null) {
-            System.out.print("Propagation error, retry round " + this.rounds++ + "\r");
+            //System.out.print("Propagation error, retry round " + this.rounds++ + "\r");
             initMap();
             generateMap();
         }
