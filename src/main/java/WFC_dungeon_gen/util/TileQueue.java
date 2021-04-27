@@ -113,10 +113,13 @@ public class TileQueue {
     private void increaseSize() {
         Tile[] newArray = new Tile[this.maxSize * 2];
         
+        //System.arraycopy(this.tiles, 1, newArray, 1, this.maxSize - 1);
+        
         for (int i=1; i<this.maxSize; i++) {
             newArray[i] = this.tiles[i];
         }
+        
         this.tiles = newArray;
-        this.maxSize = this.maxSize * 2;
+        this.maxSize = (this.maxSize * 2);
     }
 }

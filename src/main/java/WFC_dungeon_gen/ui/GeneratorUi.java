@@ -16,7 +16,10 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -24,10 +27,12 @@ import javafx.scene.text.Font;
 
 public class GeneratorUi extends Application {
 
-    private int winWidth;
-    private int winHeight;
     private Stage window;
     private TextArea textArea;
+    private CheckBox chBoxSplitTiles;
+    private TextField tfNumRows;
+    private TextField tfNumCols;
+    private Label notification;
 
     private TileSetDao dao;
     private TileSet tileSet;
@@ -44,16 +49,18 @@ public class GeneratorUi extends Application {
     @Override
     public void init() {
         this.dao = new TileSetJsonDao();
-        this.file = "./data/dungeon_trivial_2.JSON";
+        this.file = "./data/dungeon_trivial4.JSON";
         this.setLoaded = loadTileSet(this.file);
-        this.mapWidth = 15;
-        this.mapDepth = 10;
+        this.mapWidth = 12;
+        this.mapDepth = 6;
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         this.window = stage;
         window.setTitle("Wave Function Collapse Dungeon Generator");
+        
+        this.notification = new Label();
 
         HBox btn_pane = new HBox();
         Button btn_generate = new Button("Generate");
@@ -70,20 +77,39 @@ public class GeneratorUi extends Application {
         btn_step.setOnAction(e -> {
             step();
         });
+        
+        Button btn_validate = new Button("Validate");
+        btn_validate.setOnAction(e -> {
+            this.validator = new Validator(this.map, this.tileSet);
+            validateMap();
+        });
+        
+        this.chBoxSplitTiles = new CheckBox("Split tiles");
+        this.chBoxSplitTiles.setOnAction(e -> {
+            displayMap();
+        });
+        
+        Label labelRows = new Label("Height");
+        this.tfNumRows = new TextField(Integer.toString(mapDepth));
+        this.tfNumRows.setPrefWidth(30);
+        
+        Label labelCols = new Label("Width");
+        this.tfNumCols = new TextField(Integer.toString(mapWidth));
+        this.tfNumCols.setPrefWidth(30);
 
-        btn_pane.getChildren().add(btn_generate);
-        btn_pane.getChildren().add(btn_clear);
-        btn_pane.getChildren().add(btn_step);
-
+        btn_pane.getChildren().addAll(btn_generate, btn_clear, btn_step, btn_validate, chBoxSplitTiles, labelCols, tfNumCols, labelRows, tfNumRows);
+        btn_pane.setSpacing(7);
+        
         VBox vbox = new VBox();
         this.textArea = new TextArea();
 
         textArea.setPrefColumnCount(mapWidth * this.tileWidth);
         textArea.setPrefRowCount((int)(mapDepth*1.2) * this.tileWidth);
-        textArea.setFont(Font.loadFont("file:data/square.ttf", 12));
+        textArea.setFont(Font.loadFont("file:data/square.ttf", 10));
 
         vbox.getChildren().add(btn_pane);
         vbox.getChildren().add(textArea);
+        vbox.getChildren().add(this.notification);
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(0, 20, 10, 20)); 
 
@@ -98,16 +124,35 @@ public class GeneratorUi extends Application {
     }
 
     private void generateMap() {
+        int newRows = this.mapDepth;
+        int newCols = this.mapWidth;
+        try {
+            newRows = Integer.parseInt(this.tfNumRows.getText());
+            newCols = Integer.parseInt(this.tfNumCols.getText());
+        } catch (NumberFormatException e) {
+            this.notification.setText("Please enter a valid number");
+            return;
+        }
+        
+        this.mapWidth = newCols;
+        this.mapDepth = newRows;
+        
         this.setLoaded = loadTileSet(this.file);
-        this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
-        this.dungeon.initMap();
-        this.map = this.dungeon.generateMap();
-        this.validator = new Validator(this.map, this.tileSet);
-        validateMap();
-        displayMap();
+        if (this.setLoaded) {
+            long startTime = System.nanoTime();//System.currentTimeMillis();
+            this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
+            this.dungeon.initMap();
+            this.map = this.dungeon.generateMap();
+            double timeInterval = (double) (System.nanoTime() - startTime);
+            this.notification.setText("Map generated in: " + timeInterval*0.000001 + "ms");
+            displayMap();
+        } else {
+            this.notification.setText("Error loading tileset");
+        }
     }
 
     private void clear() {
+        //displayGrid();
         this.dungeon.initMap();
         this.map = dungeon.getMap();
         displayMap();
@@ -122,6 +167,29 @@ public class GeneratorUi extends Application {
     private void validateMap() {
         this.validator.canTraverse(0, 0, 1, 1);   
     }
+    
+    private String splitIntoGrid(String mapString) {
+        String newOutput = "";
+        int j = 0;
+        int k = 0;
+        for (int i=0; i<mapString.length(); i++) {
+            if (k == this.tileWidth) {
+                newOutput += "\n";
+                k = 0;
+            } 
+            if (j % (this.tileWidth+1) == 0) {
+                newOutput += " ";
+                j++;
+            } 
+            newOutput += mapString.charAt(i);
+            j++;
+            if (mapString.charAt(i) == '\n') {
+                j = 0;
+                k++;
+            }
+        }
+        return newOutput;
+    }
 
     private void displayMap() {
         String output = "";
@@ -130,8 +198,11 @@ public class GeneratorUi extends Application {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
 
+                    // un-initialized tiles
                     if (tileNum == -1) {
-                        output += "***";//this.tiles[0][0];
+                        for (int k=0; k<this.tileWidth; k++) {
+                            output += "*";
+                        }
                     } else {
                         output += this.tiles[tileNum][j];
                     }
@@ -139,7 +210,11 @@ public class GeneratorUi extends Application {
                 output += "\n";
             }
         }
-        this.textArea.setText(output);
+        if (this.chBoxSplitTiles.isSelected()) {
+            this.textArea.setText(splitIntoGrid(output));
+        } else {
+            this.textArea.setText(output);
+        }
     }
 
     private boolean loadTileSet(String file) {

@@ -39,8 +39,9 @@ public class Solver {
     }
     
     public final void initMap() {
-        this.entropyQueue = new TileQueue(this.width * this.depth);
-        this.propagatorQueue = new TileQueue(this.width * this.depth);
+//        this.entropyQueue = new TileQueue(this.width * this.depth);
+        this.entropyQueue = new TileQueue(512);
+        this.propagatorQueue = new TileQueue(512);
         this.dungeonMap = initializeMap();
         if (maintainBorders) {
             addBorder();
@@ -233,7 +234,7 @@ public class Solver {
     }
 
     /**
-     * Reducec the possible outcomes of a tile based on the available tiles in the
+     * Reduces the possible outcomes of a tile based on the available tiles in the
      * propagator tiles and propagation direction.
      * @param row Tile position
      * @param col Tile position

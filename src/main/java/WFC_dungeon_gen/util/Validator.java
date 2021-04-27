@@ -10,118 +10,107 @@ import java.util.ArrayList;
  * @author Juha Kauppinen
  */
 public class Validator {
+
     private int[][] map;
     private final Type[] tileTypes;
     private final boolean[][] connections;
     private boolean[] visited;
-    private int[] roomParent;
-    private int[] roomSize;
-    private int numRooms;
-    
+    private final int[] roomParent;
+    private final int[] roomSize;
+    private final int columnLen;
+    private ArrayList<ArrayList<Integer>> rooms;
+
     public Validator(int[][] map, TileSet tileSet) {
-       this.map = map; 
-       this.tileTypes = tileSet.getTileTypes();
-       this.connections = tileSet.getConnections();
-       int numberOfTiles = map.length * map[0].length;
-       this.visited = new boolean[numberOfTiles + 1];
-       this.roomParent = new int[numberOfTiles];
-       this.roomSize = new int[numberOfTiles];
-       this.numRooms = 0;
-       
-       for (int i=0; i<numberOfTiles; i++) {
-           this.roomParent[i] = i;
-           this.roomSize[i] = 1;
-       }
+        this.map = map;
+        this.tileTypes = tileSet.getTileTypes();
+        this.connections = tileSet.getConnections();
+        this.columnLen = this.map[0].length;
+        int numberOfTiles = map.length * map[0].length;
+        this.visited = new boolean[numberOfTiles + 1];
+        this.roomParent = new int[numberOfTiles];
+        this.roomSize = new int[numberOfTiles];
+        this.rooms = new ArrayList<>();
+
+        for (int i = 0; i < numberOfTiles; i++) {
+            this.roomParent[i] = i;
+            this.roomSize[i] = 1;
+        }
     }
-    
-    private void addRoomTile(int y, int x) {
-        int cols = this.map[0].length;
-        int i = y * (cols)  + x;
-        
-        if (!visited[i]) {
-            visited[i] = true;
-            int diff = 0;
-            
-            if (visited[i+1]) {
-                if (connectTiles(i, i+1)) {
-                    diff++;
+
+    /**
+     * Recursive method for finding adjacent room tiles
+     * @param row map index
+     * @param col map index
+     * @param roomCluster list of tiles in this room
+     */
+    private void addRoom(int row, int col, ArrayList<Integer> roomCluster) {
+        int i = row * this.columnLen + col;
+        visited[i] = true;
+        roomCluster.add(i);
+
+        boolean[] tileConnections = this.connections[map[row][col]];
+
+        // cycle throught cardinal directions, up-right-down-left
+        for (Direction dir : Direction.values()) {
+            int tileRow = row + dir.vectY;
+            int tileCol = col + dir.vectX;
+
+            // if tile has connection in given direction
+            if (tileConnections[dir.value] && validCoordinate(tileRow, tileCol)) {
+                int index = tileRow * this.columnLen + tileCol;
+                if (!visited[index]) {
+                    Type thisTile = tileTypes[map[tileRow][tileCol]];
+                    // if a room is found, do a recursion
+                    if (thisTile == Type.ROOM || thisTile == Type.INTERSECTION) {
+                        connectTiles(i, (i + dir.vectY * this.columnLen + dir.vectX));
+                        addRoom(tileRow, tileCol, roomCluster);
+                    }
                 }
-            }
-            if (visited[i-1]) {
-                if (connectTiles(i, i-1)) {
-                    diff++;
-                }
-            }
-            if (visited[i+cols]) {
-                if (connectTiles(i, i+cols)) {
-                    diff++;
-                }
-            }
-            if (visited[i-cols]) {
-                if (connectTiles(i, i-cols)) {
-                    diff++;
-                }
-            }
-            
-            switch (diff) {
-                case 0:
-                    this.numRooms++;
-                    break;
-                case 2:
-                    this.numRooms--;
-                    break;
-                case 3:
-                    this.numRooms = this.numRooms - 2;
-                    break;
-                case 4:
-                    this.numRooms = this.numRooms - 3;
-                    break;
-                default:
-                    break;
             }
         }
     }
-    
+
     /**
-     * Recursive method for finging the ends of corridors
+     * Recursive method for finding the ends of corridors
+     *
      * @param row index on map
      * @param col index on map
      * @param connectingRooms list of rooms containing the connections
      */
     private void addCorridor(int row, int col, ArrayList<Integer> connectingRooms) {
-        int colLen = this.map[0].length;
-        int i = row * colLen  + col; 
+        int i = row * this.columnLen + col;
         visited[i] = true;
-        
+
         boolean[] tileConnections = this.connections[map[row][col]];
 
-        // cycle throught directions, up-right-down-left
+        // cycle throught cardinal directions, up-right-down-left
         for (Direction dir : Direction.values()) {
-            int tileRow = row+dir.vectY;
-            int tileCol = col+dir.vectX;
-            
+            int tileRow = row + dir.vectY;
+            int tileCol = col + dir.vectX;
+
             // if tile has connection in given direction
-            if (tileConnections[dir.value] && validCoordinate(tileRow, tileCol)) {              
-                int index = tileRow * colLen + tileCol;
-                if (!visited[index]) { 
+            if (tileConnections[dir.value] && validCoordinate(tileRow, tileCol)) {
+                int index = tileRow * this.columnLen + tileCol;
+                if (!visited[index]) {
                     Type thisTile = tileTypes[map[tileRow][tileCol]];
-                    // if found corridor do recursion
+                    // if a corridor is found, do a recursion
                     if (thisTile == Type.CORRIDOR) {
                         addCorridor(tileRow, tileCol, connectingRooms);
-                        // if found a room, add it to the list
+                        // if a room is found, add it to the list
                     } else if (thisTile == Type.ROOM || thisTile == Type.INTERSECTION) {
                         connectingRooms.add(findRoomRep(index));
-                    }   
-                }     
+                    }
+                }
             }
-        } 
+        }
     }
-    
+
     /**
      * Check that the coordinate is within the map array
+     *
      * @param row row index
      * @param col col index
-     * @return true if coordingate is within the map, false otherwise
+     * @return true if coordinate is within the map, false otherwise
      */
     private boolean validCoordinate(int row, int col) {
         if (row < 0 || row >= map.length) {
@@ -129,11 +118,11 @@ public class Validator {
         }
         return !(col < 0 || col >= map[0].length);
     }
-    
+
     private boolean connectTiles(int a, int b) {
         a = this.findRoomRep(a);
         b = this.findRoomRep(b);
-        
+
         if (a != b) {
             if (roomSize[a] < roomSize[b]) {
                 int tmp = a;
@@ -146,57 +135,62 @@ public class Validator {
         }
         return false;
     }
-    
+
     private int findRoomRep(int i) {
         while (i != roomParent[i]) {
             i = roomParent[i];
         }
         return i;
     }
-    
+
     public void setMap(int[][] newMap) {
         this.map = newMap;
     }
-    
+
     public boolean canTraverse(int startX, int startY, int endX, int endY) {
-        createNetwork();
+        findRooms();
+        findRoomConnections();
         return false;
     }
-    
-    private void createNetwork() {
-        for (int x=0; x<this.map.length; x++) {
-            for (int y=0; y<this.map[0].length; y++) {
-                Type currentTileType = tileTypes[map[x][y]];
-                if (currentTileType == Type.ROOM || currentTileType == Type.INTERSECTION) {
-                    //System.out.println("adding room " + x + "." + y);
-                    addRoomTile(x, y);
-                }
-            }
-        }
-        System.out.println("number of rooms: " + this.numRooms);
-        
-        for (int i=0; i<this.roomParent.length; i++) {
-            if (roomParent[i] != i) {
-                //System.out.println("parent " + i);
-                //System.out.println("rep " + findRoot(i));
-            }
-        }
-        
-        this.visited = new boolean[map.length * map[0].length + 1];
-        for (int x=0; x<this.map.length; x++) {
-            for (int y=0; y<this.map[0].length; y++) {
-                Type currentTileType = tileTypes[map[x][y]];
-                if (currentTileType == Type.CORRIDOR && !this.visited[x * this.map[0].length  + y]) {
-                    ArrayList<Integer> connectingRooms = new ArrayList<>();
-                    addCorridor(x, y, connectingRooms);
-                    System.out.println("connecting rooms " + connectingRooms.toString() );
-                }
-            }
-        }
-        
-    }
-}
 
-class Node {
-    
+    /**
+     * Cycles through the map, once a room or intersection tile is found,
+     * collects all connected room tiles in a list.
+     */
+    private void findRooms() {
+        this.visited = new boolean[map.length * map[0].length + 1];
+        for (int x = 0; x < this.map.length; x++) {
+            for (int y = 0; y < this.map[0].length; y++) {
+                Type currentTileType = tileTypes[map[x][y]];
+                if ((currentTileType == Type.ROOM || currentTileType == Type.INTERSECTION)
+                        && !this.visited[x * this.map[0].length + y]) {
+                    ArrayList<Integer> roomCluster = new ArrayList<>();
+                    addRoom(x, y, roomCluster);
+                    this.rooms.add(roomCluster);
+                    System.out.println("room cluster " + roomCluster.toString());
+                }
+            }
+        }
+        System.out.println("number of rooms: " + this.rooms.size());
+    }
+
+    /**
+     * Cycles through the map, once a corridor tile is found, traverses
+     * connecting tiles in each direction until a room or intersection tile is
+     * found.
+     */
+    private void findRoomConnections() {
+        this.visited = new boolean[map.length * map[0].length + 1];
+        for (int x = 0; x < this.map.length; x++) {
+            for (int y = 0; y < this.map[0].length; y++) {
+                Type currentTileType = tileTypes[map[x][y]];
+                if (currentTileType == Type.CORRIDOR && !this.visited[x * this.map[0].length + y]) {
+                    ArrayList<Integer> connectedRooms = new ArrayList<>();
+                    addCorridor(x, y, connectedRooms);
+                    System.out.println("connected rooms " + connectedRooms.toString());
+                }
+            }
+        }
+    }
+
 }
