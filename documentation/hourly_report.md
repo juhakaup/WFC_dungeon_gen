@@ -38,3 +38,12 @@ date       | time | task |
 2021-04-15 | 2h   | Somewhat better handling of contradictions, jar build settings |
 2021-04-16 | 4h   | Write some tests. Refactoring and rearraigned code. Created a more elaborate tilese. |
 2021-04-17 | 2h   | Documentation. Continue working on the new tileset. |
+
+## Week 5
+date       | time | task |
+-----------|------|------|
+2021-04-20 | 2h   | Research A* algorithm for proofing the maze |
+2021-04-21 | 3h   | Decided to go back to simpler tileset, created tileset data, looked into clustering of nodes |
+2021-04-22 | 3h   | Implemented an union-find algoritm for grouping room tiles |
+2021-04-23 | 3h   | Started to implement an algorithm for traversing the corridors of the maze |
+2021-04-24 | 3h   | Finished the traversing algo. Update documentation, bugfixes |
