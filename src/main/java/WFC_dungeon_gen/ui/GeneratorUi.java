@@ -23,7 +23,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-
+import javafx.scene.text.Text;
 
 public class GeneratorUi extends Application {
 
@@ -45,6 +45,8 @@ public class GeneratorUi extends Application {
     private Solver dungeon;
     private Validator validator;
     private String file;
+    private int fontSize;
+    private int minWindowWidth;
 
     @Override
     public void init() {
@@ -53,13 +55,15 @@ public class GeneratorUi extends Application {
         this.setLoaded = loadTileSet(this.file);
         this.mapWidth = 12;
         this.mapDepth = 6;
+        this.fontSize = 10;
+        this.minWindowWidth = 700;
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         this.window = stage;
         window.setTitle("Wave Function Collapse Dungeon Generator");
-        
+
         this.notification = new Label();
 
         HBox btn_pane = new HBox();
@@ -77,41 +81,40 @@ public class GeneratorUi extends Application {
         btn_step.setOnAction(e -> {
             step();
         });
-        
+
         Button btn_validate = new Button("Validate");
         btn_validate.setOnAction(e -> {
             this.validator = new Validator(this.map, this.tileSet);
             validateMap();
         });
-        
+
         this.chBoxSplitTiles = new CheckBox("Split tiles");
         this.chBoxSplitTiles.setOnAction(e -> {
             displayMap();
         });
-        
+
         Label labelRows = new Label("Height");
         this.tfNumRows = new TextField(Integer.toString(mapDepth));
-        this.tfNumRows.setPrefWidth(30);
-        
+        this.tfNumRows.setPrefWidth(40);
+
         Label labelCols = new Label("Width");
         this.tfNumCols = new TextField(Integer.toString(mapWidth));
-        this.tfNumCols.setPrefWidth(30);
+        this.tfNumCols.setPrefWidth(40);
 
         btn_pane.getChildren().addAll(btn_generate, btn_clear, btn_step, btn_validate, chBoxSplitTiles, labelCols, tfNumCols, labelRows, tfNumRows);
         btn_pane.setSpacing(7);
-        
+
         VBox vbox = new VBox();
         this.textArea = new TextArea();
 
-        textArea.setPrefColumnCount(mapWidth * this.tileWidth);
-        textArea.setPrefRowCount((int)(mapDepth*1.2) * this.tileWidth);
-        textArea.setFont(Font.loadFont("file:data/square.ttf", 10));
+        updateWindowSize();
+        textArea.setFont(Font.loadFont("file:data/square.ttf", this.fontSize));
 
         vbox.getChildren().add(btn_pane);
         vbox.getChildren().add(textArea);
         vbox.getChildren().add(this.notification);
         vbox.setSpacing(10);
-        vbox.setPadding(new Insets(0, 20, 10, 20)); 
+        vbox.setPadding(new Insets(0, 20, 10, 20));
 
         if (setLoaded) {
             this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
@@ -121,6 +124,19 @@ public class GeneratorUi extends Application {
         Scene scene = new Scene(vbox);
         window.setScene(scene);
         window.show();
+    }
+
+    private void updateWindowSize() {
+        int width = this.chBoxSplitTiles.isSelected() ? this.tileWidth + 2 : this.tileWidth + 1;
+        textArea.setPrefColumnCount(mapWidth * width);
+        textArea.setPrefRowCount((int) (mapDepth * 1.0) * this.tileWidth);
+
+        textArea.setMinHeight(this.fontSize * width * mapDepth);
+        textArea.setMinWidth(this.fontSize * width * this.mapWidth);
+
+        this.window.setHeight(this.fontSize * width * mapDepth + 100);
+        int textAreaWidth = this.fontSize * width * mapWidth + 50;
+        this.window.setWidth((textAreaWidth < this.minWindowWidth) ? this.minWindowWidth : textAreaWidth);
     }
 
     private void generateMap() {
@@ -133,10 +149,11 @@ public class GeneratorUi extends Application {
             this.notification.setText("Please enter a valid number");
             return;
         }
-        
+
         this.mapWidth = newCols;
         this.mapDepth = newRows;
-        
+        updateWindowSize();
+
         this.setLoaded = loadTileSet(this.file);
         if (this.setLoaded) {
             long startTime = System.nanoTime();//System.currentTimeMillis();
@@ -144,7 +161,7 @@ public class GeneratorUi extends Application {
             this.dungeon.initMap();
             this.map = this.dungeon.generateMap();
             double timeInterval = (double) (System.nanoTime() - startTime);
-            this.notification.setText("Map generated in: " + timeInterval*0.000001 + "ms");
+            this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms");
             displayMap();
         } else {
             this.notification.setText("Error loading tileset");
@@ -152,7 +169,6 @@ public class GeneratorUi extends Application {
     }
 
     private void clear() {
-        //displayGrid();
         this.dungeon.initMap();
         this.map = dungeon.getMap();
         displayMap();
@@ -163,24 +179,24 @@ public class GeneratorUi extends Application {
         this.map = dungeon.getMap();
         displayMap();
     }
-    
+
     private void validateMap() {
-        this.validator.canTraverse(0, 0, 1, 1);   
+        this.validator.canTraverse(0, 0, 1, 1);
     }
-    
+
     private String splitIntoGrid(String mapString) {
         String newOutput = "";
         int j = 0;
         int k = 0;
-        for (int i=0; i<mapString.length(); i++) {
+        for (int i = 0; i < mapString.length(); i++) {
             if (k == this.tileWidth) {
                 newOutput += "\n";
                 k = 0;
-            } 
-            if (j % (this.tileWidth+1) == 0) {
+            }
+            if (j % (this.tileWidth + 1) == 0) {
                 newOutput += " ";
                 j++;
-            } 
+            }
             newOutput += mapString.charAt(i);
             j++;
             if (mapString.charAt(i) == '\n') {
@@ -200,7 +216,7 @@ public class GeneratorUi extends Application {
 
                     // un-initialized tiles
                     if (tileNum == -1) {
-                        for (int k=0; k<this.tileWidth; k++) {
+                        for (int k = 0; k < this.tileWidth; k++) {
                             output += "*";
                         }
                     } else {
