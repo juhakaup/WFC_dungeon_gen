@@ -1,12 +1,11 @@
 package WFC_dungeon_gen.domain;
 
 import WFC_dungeon_gen.util.MyRandom;
-import static WFC_dungeon_gen.domain.Direction.*;
 import WFC_dungeon_gen.util.TileQueue;
 import java.util.Arrays;
 
 /**
- *
+ * Wave function collapse dungeon generator
  * @author Juha Kauppinen
  */
 public class Solver {
@@ -20,7 +19,7 @@ public class Solver {
     private final MyRandom random;
     private TileQueue entropyQueue = null;
     private TileQueue propagatorQueue = null;
-    private int rounds;
+    private int numberOfRetries;
     private final boolean[][] borderTiles;
     private final boolean maintainBorders;
 
@@ -30,7 +29,7 @@ public class Solver {
         this.adjacencyRules = tileSet.getAdjacencyRules();
         this.width = width;
         this.depth = depth;
-        this.rounds = 0;
+        this.numberOfRetries = 0;
         this.maintainBorders = maintainBorders;
         this.random = new MyRandom(12346);
         this.dungeonMap = null;
@@ -65,7 +64,7 @@ public class Solver {
                 propagate(nextTile);
             }
         }
-        this.rounds = 0;
+        this.numberOfRetries = 0;
         return convertToTileIds(this.dungeonMap);
     }
     
@@ -86,6 +85,10 @@ public class Solver {
     
     public int[][] getMap() {
         return convertToTileIds(dungeonMap);
+    }
+    
+    public int getNumOfRetries() {
+        return  this.numberOfRetries;
     }
 
     /**
@@ -122,18 +125,20 @@ public class Solver {
         return tiles;
     }
     
-        
+    /**
+     * Adds a border around the map, this is to contain the dungeon within the map
+     */
     public void addBorder() {    
         for (int i=1; i<this.width-1; i++) {
-            dungeonMap[0][i].setAvalableTiles(this.borderTiles[0]);
-            dungeonMap[this.depth-1][i].setAvalableTiles(borderTiles[2]);
+            dungeonMap[0][i].setAvalableTiles(this.borderTiles[Direction.UP.value]);
+            dungeonMap[this.depth-1][i].setAvalableTiles(borderTiles[Direction.DOWN.value]);
             propagatorQueue.add(dungeonMap[0][i]);  
             propagatorQueue.add(dungeonMap[this.depth - 1][i]);
         }
         
         for (int j=1; j<this.depth-1; j++) {
-            dungeonMap[j][0].setAvalableTiles(borderTiles[3]);
-            dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[1]);
+            dungeonMap[j][0].setAvalableTiles(borderTiles[Direction.LEFT.value]);
+            dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[Direction.RIGHT.value]);
             propagatorQueue.add(dungeonMap[j][0]);  
             propagatorQueue.add(dungeonMap[j][this.width - 1]);
         }
@@ -177,8 +182,8 @@ public class Solver {
     }
 
     /**
-     * Randomly sets the outcome of the tile to one of its possibilities based
-     * on weighted distribution of tiles
+     * Randomly sets the outcome of the tile to one of its possible outcomes,
+     * based on weighted distribution of tiles
      *
      * @param tileParam parameters containing coordinates for the tile
      */
@@ -209,58 +214,59 @@ public class Solver {
     }
 
     /**
-     * Spreading the change of available tiles to neighboring tiles.
-     *
-     * @param propagator The source of propagation
+     * Propagates the change in the propagator tile to its adjacent tiles.
+     * @param propagator the tile that was changed, source of propagation
      */
     private void propagate(Tile propagator) {
         int row = propagator.getRow();
         int col = propagator.getCol();
 
-        boolean[] allowed = propagator.getAvailableTiles();
+        boolean[] propagatorTiles = propagator.getAvailableTiles();
+        
+        // cycle through cardinal directions 
+        for (Direction dir: Direction.values()) {
+            // coordinates for neighbouring tile
+            int neighbourRow = row + dir.vectY;
+            int neighbourCol = col + dir.vectX;
+            
+            // if the tile is valid, adjust its available tiles
+            if (validCoordinate(neighbourRow, neighbourCol)) {
+                Tile neighbour = dungeonMap[neighbourRow][neighbourCol];
+                if (!neighbour.isCollapsed()) {
 
-        if (row - 1 >= 0) {
-            reduce(row - 1, col, UP, allowed);
-        }
-        if (row + 1 < this.depth) {
-            reduce(row + 1, col, DOWN, allowed);
-        }
-        if (col - 1 >= 0) {
-            reduce(row, col - 1, LEFT, allowed);
-        }
-        if (col + 1 < this.width) {
-            reduce(row, col + 1, RIGHT, allowed);
-        }
+                    // tiles that the neighboring tile could turn into
+                    boolean[] availableTiles = Arrays.copyOf(neighbour.getAvailableTiles(), numPossibleTiles);
+                    boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
+                    availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
+
+                    // if the new tiles are different than what the tile already had, return true
+                    Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
+                    // if we get back null, there has been an error and map is reset
+                    if (tileChanged == null) {
+                        this.numberOfRetries++;
+                        initMap();
+                    }
+                    // if tile is changed, add it to queues
+                    else if (tileChanged) {
+                        this.propagatorQueue.add(neighbour);
+                        this.entropyQueue.add(neighbour);
+                    }
+                }
+            }   
+        }      
     }
-
+    
     /**
-     * Reduces the possible outcomes of a tile based on the available tiles in the
-     * propagator tiles and propagation direction.
-     * @param row Tile position
-     * @param col Tile position
-     * @param dir Direction of propagation
-     * @param propagatorTiles Tiles available to the propagator
+     * Check if the given coordinates are within the map array
+     * @param row array index
+     * @param col array index
+     * @return true if the coordinates are within the map, false otherwise
      */
-    private void reduce(int row, int col, Direction dir, boolean[] propagatorTiles) {
-        Tile neighbour = dungeonMap[row][col];
-        if (neighbour.isCollapsed()) {
-            return;
+    private boolean validCoordinate(int row, int col) {
+        if (row < 0 || row >= this.depth) {
+            return false;
         }
-
-        boolean[] availableTiles = Arrays.copyOf(neighbour.getAvailableTiles(), numPossibleTiles);
-        boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
-        availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
-
-        Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
-        if (tileChanged == null) {
-            //System.out.print("Propagation error, retry round " + this.rounds++ + "\r");
-            initMap();
-            generateMap();
-        }
-        else if (tileChanged) {
-            this.propagatorQueue.add(neighbour);
-            this.entropyQueue.add(neighbour);
-        }
+        return !(col < 0 || col >= this.width);
     }
 
     /**
@@ -298,7 +304,7 @@ public class Solver {
     }
 
     /**
-     * Gathers all available tiles that a neighbouring tile can collapse to,
+     * Gathers all available tiles that a tile can collapse to,
      * based on adjacency rules.
      *
      * @param tiles Tiles available to the source of propagation.
@@ -317,11 +323,11 @@ public class Solver {
     }
 
     /**
-     * Returns next tile from queue
+     * Returns next tile from queue, according to tiles entropy values.
      *
      * @param queue Queue from where the tile is selected
      * @param rejectCollapsed If true collapsed tiles are rejected
-     * @return Tile if available, null no valid tile can be found
+     * @return Tile if available, null if no valid tile can be found
      */
     private Tile selectNextTile(TileQueue queue, boolean rejectCollapsed) {
         while (true) {
