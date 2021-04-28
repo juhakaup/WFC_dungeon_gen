@@ -94,7 +94,6 @@ public class GeneratorUi extends Application {
         vbox.setPadding(new Insets(0, 20, 10, 20));
 
         if (setLoaded) {
-            this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
             generateMap();
         }
 
@@ -186,35 +185,6 @@ public class GeneratorUi extends Application {
         this.window.setHeight(this.fontSize * tileSize * mapDepth + 200);
     }
 
-    private void generateMap() {
-        int newRows = this.mapDepth;
-        int newCols = this.mapWidth;
-        try {
-            newRows = Integer.parseInt(this.tfNumRows.getText());
-            newCols = Integer.parseInt(this.tfNumCols.getText());
-        } catch (NumberFormatException e) {
-            this.notification.setText("Please enter a valid number");
-            return;
-        }
-
-        this.mapWidth = newCols;
-        this.mapDepth = newRows;
-        updateWindowSize();
-
-        this.setLoaded = loadTileSet(this.file);
-        if (this.setLoaded) {
-            long startTime = System.nanoTime();
-            this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
-            this.dungeon.initMap();
-            this.map = this.dungeon.generateMap();
-            double timeInterval = (double) (System.nanoTime() - startTime);
-            this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms.");
-            displayMap();
-        } else {
-            this.notification.setText("Error loading tileset");
-        }
-    }
-
     private void clear() {
         this.dungeon.initMap();
         this.map = dungeon.getMap();
@@ -229,29 +199,6 @@ public class GeneratorUi extends Application {
 
     private void validateMap() {
         this.validator.canTraverse(0, 0, 1, 1);
-    }
-
-    private String splitIntoGrid(String mapString) {
-        String newOutput = "";
-        int j = 0;
-        int k = 0;
-        for (int i = 0; i < mapString.length(); i++) {
-            if (k == this.tileWidth) {
-                newOutput += "\n";
-                k = 0;
-            }
-            if (j % (this.tileWidth + 1) == 0) {
-                newOutput += " ";
-                j++;
-            }
-            newOutput += mapString.charAt(i);
-            j++;
-            if (mapString.charAt(i) == '\n') {
-                j = 0;
-                k++;
-            }
-        }
-        return newOutput;
     }
 
     private void displayMap() {
@@ -279,7 +226,59 @@ public class GeneratorUi extends Application {
             this.textArea.setText(output);
         }
     }
+    
+    private String splitIntoGrid(String mapString) {
+        String newOutput = "";
+        int j = 0;
+        int k = 0;
+        for (int i = 0; i < mapString.length(); i++) {
+            if (k == this.tileWidth) {
+                newOutput += "\n";
+                k = 0;
+            }
+            if (j % (this.tileWidth + 1) == 0) {
+                newOutput += " ";
+                j++;
+            }
+            newOutput += mapString.charAt(i);
+            j++;
+            if (mapString.charAt(i) == '\n') {
+                j = 0;
+                k++;
+            }
+        }
+        return newOutput;
+    }
+    
+     private void generateMap() {
+        int newRows = this.mapDepth;
+        int newCols = this.mapWidth;
+        try {
+            newRows = Integer.parseInt(this.tfNumRows.getText());
+            newCols = Integer.parseInt(this.tfNumCols.getText());
+        } catch (NumberFormatException e) {
+            this.notification.setText("Please enter a valid number");
+            return;
+        }
 
+        this.mapWidth = newCols;
+        this.mapDepth = newRows;
+        updateWindowSize();
+
+        //this.setLoaded = loadTileSet(this.file);
+        if (this.setLoaded) {
+            long startTime = System.nanoTime();
+            this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
+            this.dungeon.initMap();
+            this.map = this.dungeon.generateMap();
+            double timeInterval = (double) (System.nanoTime() - startTime);
+            this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms.");
+            displayMap();
+        } else {
+            this.notification.setText("Error loading tileset");
+        }
+    }
+    
     private boolean loadTileSet(String file) {
         try {
             TileSet newTileSet = this.dao.loadTileSet(file);
@@ -296,6 +295,7 @@ public class GeneratorUi extends Application {
             return false;
         }
     }
+
 
     public static void main() {
         launch();

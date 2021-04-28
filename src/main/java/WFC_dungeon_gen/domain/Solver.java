@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 /**
  * Wave function collapse dungeon generator
+ *
  * @author Juha Kauppinen
  */
 public class Solver {
@@ -36,9 +37,8 @@ public class Solver {
         this.borderTiles = tileSet.getBorderTiles();
         initMap();
     }
-    
+
     public final void initMap() {
-//        this.entropyQueue = new TileQueue(this.width * this.depth);
         this.entropyQueue = new TileQueue(512);
         this.propagatorQueue = new TileQueue(512);
         this.dungeonMap = initializeMap();
@@ -47,32 +47,27 @@ public class Solver {
         }
     }
 
-    public int[][] generateMap() {     
-        while (true) {
-            Tile nextTile = selectNextTile(this.entropyQueue, true);
-            if (nextTile == null) {
-                break;
-            }
-            collapseTile(nextTile);
-            propagate(nextTile);
-            
-            while (true) {
-                nextTile = selectNextTile(this.propagatorQueue, false);
-                if (nextTile == null) {
-                    break;
-                }
-                propagate(nextTile);
-            }
-        }
+    @SuppressWarnings("empty-statement")
+    public int[][] generateMap() {
         this.numberOfRetries = 0;
+        // generate map
+        while (step());
         return convertToTileIds(this.dungeonMap);
     }
-    
-    public void step() {
+
+    /**
+     * Selects the next tile to be collapsed, then propagates the result to
+     * adjacent tiles.
+     *
+     * @return true if there was a tile to collapse, false otherwise.
+     */
+    public boolean step() {
         Tile nextTile = selectNextTile(this.entropyQueue, true);
-        if (nextTile != null) {   
+        if (nextTile != null) {
             collapseTile(nextTile);
             propagate(nextTile);
+        } else {
+            return false;
         }
         while (true) {
             nextTile = selectNextTile(this.propagatorQueue, false);
@@ -81,18 +76,21 @@ public class Solver {
             }
             propagate(nextTile);
         }
+        return true;
     }
-    
+
     public int[][] getMap() {
         return convertToTileIds(dungeonMap);
     }
-    
+
     public int getNumOfRetries() {
-        return  this.numberOfRetries;
+        return this.numberOfRetries;
     }
 
     /**
-     * Converts given Tile array to integer array based on the final value of tile.
+     * Converts given Tile array to integer array based on the final value of
+     * tile.
+     *
      * @return 2d integer array
      */
     private int[][] convertToTileIds(Tile[][] map) {
@@ -107,6 +105,7 @@ public class Solver {
 
     /**
      * Initializes the dungeon map with tiles
+     *
      * @return 2d array of Tiles
      */
     private Tile[][] initializeMap() {
@@ -123,48 +122,6 @@ public class Solver {
             }
         }
         return tiles;
-    }
-    
-    /**
-     * Adds a border around the map, this is to contain the dungeon within the map
-     */
-    public void addBorder() {    
-        for (int i=1; i<this.width-1; i++) {
-            dungeonMap[0][i].setAvalableTiles(this.borderTiles[Direction.UP.value]);
-            dungeonMap[this.depth-1][i].setAvalableTiles(borderTiles[Direction.DOWN.value]);
-            propagatorQueue.add(dungeonMap[0][i]);  
-            propagatorQueue.add(dungeonMap[this.depth - 1][i]);
-        }
-        
-        for (int j=1; j<this.depth-1; j++) {
-            dungeonMap[j][0].setAvalableTiles(borderTiles[Direction.LEFT.value]);
-            dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[Direction.RIGHT.value]);
-            propagatorQueue.add(dungeonMap[j][0]);  
-            propagatorQueue.add(dungeonMap[j][this.width - 1]);
-        }
-        
-        boolean[] topLeft = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[3]);
-        boolean[] topRight = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[1]);
-        boolean[] bottomLeft = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[3]);
-        boolean[] bottomRight = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[1]);
-        
-        dungeonMap[0][0].setAvalableTiles(topLeft);
-        dungeonMap[0][this.width-1].setAvalableTiles(topRight);
-        dungeonMap[this.depth-1][0].setAvalableTiles(bottomLeft);
-        dungeonMap[this.depth-1][this.width-1].setAvalableTiles(bottomRight);
-        
-        propagatorQueue.add(dungeonMap[0][0]);  
-        propagatorQueue.add(dungeonMap[0][this.width - 1]);
-        propagatorQueue.add(dungeonMap[this.depth - 1][0]);  
-        propagatorQueue.add(dungeonMap[this.depth - 1][this.width - 1]);
-        
-        while (true) {
-            Tile nextTile = selectNextTile(this.propagatorQueue, false);
-            if (nextTile == null) {
-                break;
-            }
-            propagate(nextTile);
-        }
     }
 
     /**
@@ -215,6 +172,7 @@ public class Solver {
 
     /**
      * Propagates the change in the propagator tile to its adjacent tiles.
+     *
      * @param propagator the tile that was changed, source of propagation
      */
     private void propagate(Tile propagator) {
@@ -222,22 +180,21 @@ public class Solver {
         int col = propagator.getCol();
 
         boolean[] propagatorTiles = propagator.getAvailableTiles();
-        
+
         // cycle through cardinal directions 
-        for (Direction dir: Direction.values()) {
+        for (Direction dir : Direction.values()) {
             // coordinates for neighbouring tile
             int neighbourRow = row + dir.vectY;
             int neighbourCol = col + dir.vectX;
-            
+
             // if the tile is valid, adjust its available tiles
             if (validCoordinate(neighbourRow, neighbourCol)) {
                 Tile neighbour = dungeonMap[neighbourRow][neighbourCol];
                 if (!neighbour.isCollapsed()) {
 
                     // tiles that the neighboring tile could turn into
-                    boolean[] availableTiles = Arrays.copyOf(neighbour.getAvailableTiles(), numPossibleTiles);
                     boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
-                    availableTiles = booleanArraysIntersection(availableTiles, possibleTiles);
+                    boolean[] availableTiles = booleanArraysIntersection(neighbour.getAvailableTiles(), possibleTiles);
 
                     // if the new tiles are different than what the tile already had, return true
                     Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
@@ -245,19 +202,19 @@ public class Solver {
                     if (tileChanged == null) {
                         this.numberOfRetries++;
                         initMap();
-                    }
-                    // if tile is changed, add it to queues
+                    } // if tile is changed, add it to queues
                     else if (tileChanged) {
                         this.propagatorQueue.add(neighbour);
                         this.entropyQueue.add(neighbour);
                     }
                 }
-            }   
-        }      
+            }
+        }
     }
-    
+
     /**
      * Check if the given coordinates are within the map array
+     *
      * @param row array index
      * @param col array index
      * @return true if the coordinates are within the map, false otherwise
@@ -295,17 +252,20 @@ public class Solver {
      * @return Boolean array
      */
     private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
+        boolean[] newBool = new boolean[this.numPossibleTiles];
+        System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
+
         for (int i = 0; i < boolA.length; i++) {
             if (!boolB[i]) {
-                boolA[i] = false;
+                newBool[i] = false;
             }
         }
-        return boolA;
+        return newBool;
     }
 
     /**
-     * Gathers all available tiles that a tile can collapse to,
-     * based on adjacency rules.
+     * Gathers all available tiles that a tile can collapse to, based on
+     * adjacency rules.
      *
      * @param tiles Tiles available to the source of propagation.
      * @param dir Direction of propagation.
@@ -341,5 +301,48 @@ public class Solver {
             }
         }
         return null;
+    }
+
+    /**
+     * Adds a border around the map, this is to contain the dungeon within the
+     * map
+     */
+    public void addBorder() {
+        for (int i = 1; i < this.width - 1; i++) {
+            dungeonMap[0][i].setAvalableTiles(this.borderTiles[Direction.UP.value]);
+            dungeonMap[this.depth - 1][i].setAvalableTiles(borderTiles[Direction.DOWN.value]);
+            propagatorQueue.add(dungeonMap[0][i]);
+            propagatorQueue.add(dungeonMap[this.depth - 1][i]);
+        }
+
+        for (int j = 1; j < this.depth - 1; j++) {
+            dungeonMap[j][0].setAvalableTiles(borderTiles[Direction.LEFT.value]);
+            dungeonMap[j][this.width - 1].setAvalableTiles(borderTiles[Direction.RIGHT.value]);
+            propagatorQueue.add(dungeonMap[j][0]);
+            propagatorQueue.add(dungeonMap[j][this.width - 1]);
+        }
+
+        boolean[] topLeft = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[3]);
+        boolean[] topRight = booleanArraysIntersection(this.borderTiles[0], this.borderTiles[1]);
+        boolean[] bottomLeft = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[3]);
+        boolean[] bottomRight = booleanArraysIntersection(this.borderTiles[2], this.borderTiles[1]);
+
+        dungeonMap[0][0].setAvalableTiles(topLeft);
+        dungeonMap[0][this.width - 1].setAvalableTiles(topRight);
+        dungeonMap[this.depth - 1][0].setAvalableTiles(bottomLeft);
+        dungeonMap[this.depth - 1][this.width - 1].setAvalableTiles(bottomRight);
+
+        propagatorQueue.add(dungeonMap[0][0]);
+        propagatorQueue.add(dungeonMap[0][this.width - 1]);
+        propagatorQueue.add(dungeonMap[this.depth - 1][0]);
+        propagatorQueue.add(dungeonMap[this.depth - 1][this.width - 1]);
+
+        while (true) {
+            Tile nextTile = selectNextTile(this.propagatorQueue, false);
+            if (nextTile == null) {
+                break;
+            }
+            propagate(nextTile);
+        }
     }
 }
