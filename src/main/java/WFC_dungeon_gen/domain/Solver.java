@@ -2,7 +2,6 @@ package WFC_dungeon_gen.domain;
 
 import WFC_dungeon_gen.util.MyRandom;
 import WFC_dungeon_gen.util.TileQueue;
-import java.util.Arrays;
 
 /**
  * Wave function collapse dungeon generator
@@ -10,7 +9,7 @@ import java.util.Arrays;
  * @author Juha Kauppinen
  */
 public class Solver {
-
+    private static final boolean useSystemArrayCopy = true;
     private Tile[][] dungeonMap;
     private final int numPossibleTiles;
     private final int[] tileWeights;
@@ -32,7 +31,7 @@ public class Solver {
         this.depth = depth;
         this.numberOfRetries = 0;
         this.maintainBorders = maintainBorders;
-        this.random = new MyRandom(12346);
+        this.random = new MyRandom();
         this.dungeonMap = null;
         this.borderTiles = tileSet.getBorderTiles();
         initMap();
@@ -194,7 +193,10 @@ public class Solver {
 
                     // tiles that the neighboring tile could turn into
                     boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
-                    boolean[] availableTiles = booleanArraysIntersection(neighbour.getAvailableTiles(), possibleTiles);
+                    boolean[] availableTiles = booleanArraysIntersection(
+                            neighbour.getAvailableTiles(), 
+                            possibleTiles
+                    );
 
                     // if the new tiles are different than what the tile already had, return true
                     Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
@@ -253,7 +255,15 @@ public class Solver {
      */
     private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[this.numPossibleTiles];
-        System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
+        if (useSystemArrayCopy) {
+            System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
+        } else {
+            for (int i = 0; i < boolA.length; i++) {
+                if (boolA[i]) {
+                    newBool[i] = true;
+                }
+            }
+        }
 
         for (int i = 0; i < boolA.length; i++) {
             if (!boolB[i]) {
