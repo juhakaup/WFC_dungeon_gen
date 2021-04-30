@@ -77,5 +77,60 @@ public class SolverTest {
         int average = sum / cycles;
         assertEquals(average, (width * depth) / 2, 2);
     }
+    
+    @Test
+    public void tilesAreCollapsedAccordingToWeights() {
+        int cycles = 100000;
+        int numTiles = tileSet.getNumberOfTiles();
+        int[] weights = tileSet.getTileWeights();
+        int[] buckets = new int[numTiles];
+                
+        Solver solver = new Solver(1, 1, tileSet, false);
+        
+        for (int i=0; i<cycles; i++) {
+            solver.initMap();
+            solver.generateMap();
+            buckets[solver.getMap()[0][0]]++;
+        }
+        
+        int sumWeights = 0;
+        for (int w : weights) {
+            sumWeights += w;
+        }
+        
+        for (int i=0; i<numTiles; i++) {
+            double actual = cycles / (double)buckets[i];
+            double expected = sumWeights / (double)weights[i];
+            System.out.println("expected " + expected +  " actual " + actual);
+            assertEquals(expected, actual, 2);  
+        }
+    }
+    
+    @Test
+    public void createBorderdWorksAsExpected() {
+        TileSet set = null;
+        try {
+            set = new TileSetTestData().loadTileSet("trivial");
+        } catch (FileNotFoundException ex) {
+            System.out.println("error loading data");
+        }
+        
+        Solver solver = new Solver(2, 2, this.tileSet, true);
+        int[][] tiles = solver.getMap();
+        
+        // Tiles should be collapsed
+        for(int[] ints : tiles) {
+            for (int i : ints) {
+                assertEquals(6, i);
+            }
+        }
+        
+        // On a bigger map, tile inside the border is not collapsed
+        solver = new Solver(3, 3, this.tileSet, true);
+        tiles = solver.getMap();
+        assertEquals(-1, tiles[1][1]);
+        assertEquals(6, tiles[0][1]);
+        assertEquals(6, tiles[1][0]);
+    }
 
 }

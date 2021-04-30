@@ -256,6 +256,9 @@ public class GeneratorUi extends Application {
         try {
             newRows = Integer.parseInt(this.tfNumRows.getText());
             newCols = Integer.parseInt(this.tfNumCols.getText());
+            if (newRows < 0 || newCols < 0) {
+                throw new NumberFormatException();
+            }
         } catch (NumberFormatException e) {
             this.notification.setText("Please enter a valid number");
             return;

@@ -9,7 +9,7 @@ import WFC_dungeon_gen.util.TileQueue;
  * @author Juha Kauppinen
  */
 public class Solver {
-    private static final boolean useSystemArrayCopy = true;
+    private static final boolean USE_SYS_METHODS = false;
     private Tile[][] dungeonMap;
     private final int numPossibleTiles;
     private final int[] tileWeights;
@@ -41,7 +41,7 @@ public class Solver {
         this.entropyQueue = new TileQueue(512);
         this.propagatorQueue = new TileQueue(512);
         this.dungeonMap = initializeMap();
-        if (maintainBorders) {
+        if (maintainBorders && (this.width > 1 && this.depth > 1)) {
             addBorder();
         }
     }
@@ -49,8 +49,7 @@ public class Solver {
     @SuppressWarnings("empty-statement")
     public int[][] generateMap() {
         this.numberOfRetries = 0;
-        // generate map
-        while (step());
+        while (step()); // this while loop generates the map
         return convertToTileIds(this.dungeonMap);
     }
 
@@ -255,7 +254,7 @@ public class Solver {
      */
     private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[this.numPossibleTiles];
-        if (useSystemArrayCopy) {
+        if (USE_SYS_METHODS) {
             System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
         } else {
             for (int i = 0; i < boolA.length; i++) {
