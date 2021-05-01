@@ -3,7 +3,7 @@ package WFC_dungeon_gen.util;
 import WFC_dungeon_gen.domain.Direction;
 import WFC_dungeon_gen.domain.TileSet;
 import WFC_dungeon_gen.domain.Type;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -18,7 +18,7 @@ public class Validator {
     private final int[] roomParent;
     private final int[] roomSize;
     private final int columnLen;
-    private ArrayList<ArrayList<Integer>> rooms;
+    private int[] rooms;
 
     public Validator(int[][] map, TileSet tileSet) {
         this.map = map;
@@ -29,7 +29,7 @@ public class Validator {
         this.visited = new boolean[numberOfTiles + 1];
         this.roomParent = new int[numberOfTiles];
         this.roomSize = new int[numberOfTiles];
-        this.rooms = new ArrayList<>();
+        this.rooms = new int[0];
 
         for (int i = 0; i < numberOfTiles; i++) {
             this.roomParent[i] = i;
@@ -43,10 +43,10 @@ public class Validator {
      * @param col map index
      * @param roomCluster list of tiles in this room
      */
-    private void addRoom(int row, int col, ArrayList<Integer> roomCluster) {
+    private int[] addRoom(int row, int col, int[] roomCluster) {
         int i = row * this.columnLen + col;
         visited[i] = true;
-        roomCluster.add(i);
+        roomCluster = addToList(roomCluster, i);
 
         boolean[] tileConnections = this.connections[map[row][col]];
 
@@ -63,11 +63,13 @@ public class Validator {
                     // if a room is found, do a recursion
                     if (thisTile == Type.ROOM || thisTile == Type.INTERSECTION) {
                         connectTiles(i, (i + dir.vectY * this.columnLen + dir.vectX));
-                        addRoom(tileRow, tileCol, roomCluster);
+                        roomCluster = addRoom(tileRow, tileCol, roomCluster);
                     }
                 }
             }
         }
+        
+        return roomCluster;
     }
 
     /**
@@ -77,7 +79,7 @@ public class Validator {
      * @param col index on map
      * @param connectingRooms list of rooms containing the connections
      */
-    private void addCorridor(int row, int col, ArrayList<Integer> connectingRooms) {
+    private int[] addCorridor(int row, int col, int[] connectingRooms) {
         int i = row * this.columnLen + col;
         visited[i] = true;
 
@@ -95,14 +97,16 @@ public class Validator {
                     Type thisTile = tileTypes[map[tileRow][tileCol]];
                     // if a corridor is found, do a recursion
                     if (thisTile == Type.CORRIDOR) {
-                        addCorridor(tileRow, tileCol, connectingRooms);
+                        connectingRooms[0]++;
+                        connectingRooms = addCorridor(tileRow, tileCol, connectingRooms);
                         // if a room is found, add it to the list
                     } else if (thisTile == Type.ROOM || thisTile == Type.INTERSECTION) {
-                        connectingRooms.add(findRoomRep(index));
+                        connectingRooms = addToList(connectingRooms, findRoomRep(index));
                     }
                 }
             }
         }
+        return connectingRooms;
     }
 
     /**
@@ -159,19 +163,20 @@ public class Validator {
      */
     private void findRooms() {
         this.visited = new boolean[map.length * map[0].length + 1];
+        
         for (int x = 0; x < this.map.length; x++) {
             for (int y = 0; y < this.map[0].length; y++) {
                 Type currentTileType = tileTypes[map[x][y]];
                 if ((currentTileType == Type.ROOM || currentTileType == Type.INTERSECTION)
                         && !this.visited[x * this.map[0].length + y]) {
-                    ArrayList<Integer> roomCluster = new ArrayList<>();
-                    addRoom(x, y, roomCluster);
-                    this.rooms.add(roomCluster);
-                    System.out.println("room cluster " + roomCluster.toString());
+                    int[] roomCluster = new int[0];
+                    roomCluster = addRoom(x, y, roomCluster);
+                    System.out.println("room cluster " + Arrays.toString(roomCluster));
+                    rooms = addToList(rooms, x * this.map[0].length + y);
                 }
             }
         }
-        System.out.println("number of rooms: " + this.rooms.size());
+        System.out.println("number of rooms: " + this.rooms.length);
     }
 
     /**
@@ -185,12 +190,23 @@ public class Validator {
             for (int y = 0; y < this.map[0].length; y++) {
                 Type currentTileType = tileTypes[map[x][y]];
                 if (currentTileType == Type.CORRIDOR && !this.visited[x * this.map[0].length + y]) {
-                    ArrayList<Integer> connectedRooms = new ArrayList<>();
-                    addCorridor(x, y, connectedRooms);
-                    System.out.println("connected rooms " + connectedRooms.toString());
+                    int[] connectingRooms = new int[]{1};
+                    connectingRooms = addCorridor(x, y, connectingRooms);
+                    System.out.println("room connections " + Arrays.toString(connectingRooms));
                 }
             }
         }
+    }
+    
+    private int[] addToList(int[] array, int value) {
+        int[] newArray = new int[array.length + 1];
+        
+        for (int i=0; i<array.length; i++) {
+            newArray[i] = array[i];
+        }
+        newArray[newArray.length - 1] = value;
+        
+        return newArray;
     }
 
 }

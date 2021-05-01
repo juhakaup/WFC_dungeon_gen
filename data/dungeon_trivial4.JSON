@@ -461,6 +461,13 @@
     "00000001000000000001000000000000000000001"
      ],
   "tileWeights": [
+    5,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
     1,
     1,
     1,
@@ -493,14 +500,7 @@
     1,
     1,
     1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
+    2,
     1
   ],  
   "borderTiles": [
@@ -588,10 +588,10 @@
     [true,  true,  true,  true ],
     [true,  true,  true,  true ],
     [true,  true,  true,  true ],
+    [true,  true,  true,  false],
+    [false, true,  true,  true ],
     [true,  false, true,  true ],
     [true,  true,  false, true ],
-    [true,  true,  true,  true ],
-    [true,  true,  true,  true ],
     [true,  true,  true,  true ],
     [true,  true,  true,  true ]
   ]
