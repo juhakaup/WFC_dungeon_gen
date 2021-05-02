@@ -47,3 +47,13 @@ date       | time | task |
 2021-04-22 | 3h   | Implemented an union-find algoritm for grouping room tiles |
 2021-04-23 | 3h   | Started to implement an algorithm for traversing the corridors of the maze |
 2021-04-24 | 3h   | Finished the traversing algo. Update documentation, bugfixes |
+
+## Week 6
+date       | time | task |
+-----------|------|------|
+2021-04-27 | 3h   | Improve ui |
+2021-04-28 | 4h   | Bug fixing and refactoring, some more ui work |
+2021-04-29 | 2h   | Replaced java random wiht custom implementation |
+2021-04-30 | 2h   | Bugfixes, update documentation |
+2021-05-01 | 3h   | Replaced ArrayList with method that uses arrays, fix bugs, performance tests, documentation |
+2021-05-02 | 2h   | Update documentation, performance tests |

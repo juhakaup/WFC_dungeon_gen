@@ -4,6 +4,8 @@
 [![codecov](https://codecov.io/gh/juhakaup/WFC_dungeon_gen/branch/master/graph/badge.svg)](https://codecov.io/gh/juhakaup/WFC_dungeon_gen)
 ### [Design document](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/project_definition.md)
 
+### [Implementation](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/implementation.md)
+
 ### [Testing documentation](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/testing.md)
 
 ### Weekly reports
@@ -12,5 +14,6 @@
 * [Week 3](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report3.md)
 * [Week 4](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report4.md)
 * [Week 5](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report5.md)
+* [Week 6](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/weekly_report6.md)
 
 ### [Hourly report](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/hourly_report.md)
