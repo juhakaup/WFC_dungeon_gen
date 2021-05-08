@@ -8,5 +8,6 @@ public enum Type {
     ROOM,
     CORRIDOR,
     INTERSECTION,
+    ENTRANCE,
     EMPTY;
 }
