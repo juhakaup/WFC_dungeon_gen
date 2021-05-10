@@ -28,7 +28,7 @@ public class TileSetDaoTest {
         }
         assertEquals(null, set);
         
-        file = "./data/dungeon_trivial.JSON";
+        file = "./data/dungeon_basic.JSON";
         try {
             set = dao.loadTileSet(file);
         } catch (FileNotFoundException ex) {

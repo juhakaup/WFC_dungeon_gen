@@ -40,11 +40,14 @@ public class GeneratorUi extends Application {
     private int mapWidth;
     private int mapDepth;
     private int[][] map;
+    private int startingTile;
+    private int endingTile;
     private String[][] tiles;
     private boolean setLoaded;
     private int tileWidth;
     private Solver dungeon;
     private Validator validator;
+    private boolean validated;
     private String file;
     private int fontSize;
     private int minWindowWidth;
@@ -53,12 +56,14 @@ public class GeneratorUi extends Application {
     public void init() {
         this.notification = new Label();
         this.dao = new TileSetJsonDao();
-        this.file = "./data/dungeon_trivial4.JSON";
+        this.file = "./data/dungeon_5x5.JSON";
         this.setLoaded = loadTileSet(this.file);
         this.mapWidth = 12;
         this.mapDepth = 6;
         this.fontSize = 10;
         this.minWindowWidth = 800;
+        this.startingTile = -1;
+        this.endingTile = -1;
     }
 
     @Override
@@ -120,13 +125,13 @@ public class GeneratorUi extends Application {
             step();
         });
 
-        Button btn_validate = new Button("Validate");
-        btn_validate.setOnAction(e -> {
-            this.validator = new Validator(this.map, this.tileSet);
-            validateMap();
-        });
+//        Button btn_validate = new Button("Validate");
+//        btn_validate.setOnAction(e -> {
+//            this.validator = new Validator(this.map, this.tileSet);
+//            validateMap();
+//        });
 
-        btn_pane.getChildren().addAll(btn_generate, btn_clear, btn_step, btn_validate);
+        btn_pane.getChildren().addAll(btn_generate, btn_clear, btn_step);
         btn_pane.setSpacing(7);
         
         return btn_pane;
@@ -186,20 +191,28 @@ public class GeneratorUi extends Application {
     }
 
     private void clear() {
+        this.validated = false;
         this.dungeon.initMap();
         this.map = dungeon.getMap();
         displayMap();
     }
 
     private void step() {
-        this.dungeon.step();
+        boolean finished = !this.dungeon.step();
         this.map = dungeon.getMap();
+        if (finished) {
+            this.validator = new Validator(map, tileSet);
+            this.validator.generateDistances();
+            this.startingTile = this.validator.getStartingTile();
+            this.endingTile = this.validator.getEndTile();
+            this.validated = true;
+        }
         displayMap();
     }
 
-    private void validateMap() {
-        this.validator.canTraverse(0, 0, 1, 1);
-    }
+//    private void validateMap() {
+//        this.validator.generateDistances();
+//    }
 
     private void displayMap() {
         String output = "";
@@ -207,11 +220,22 @@ public class GeneratorUi extends Application {
             for (int j = 0; j < this.tileWidth; j++) {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
+                    int tileIndex = row*this.mapWidth + col;
 
                     // un-initialized tiles
                     if (tileNum == -1) {
                         for (int k = 0; k < this.tileWidth; k++) {
                             output += "*";
+                        }
+                    } else if (validated && j == this.tileWidth / 2 && tileIndex == this.startingTile) {
+                        for (int k = 0; k < this.tileWidth; k++) {
+                            
+                            output += k == (this.tileWidth / 2) ? "@" : this.tiles[tileNum][j].charAt(k);
+                        }
+                    } else if (validated && j == this.tileWidth / 2 && tileIndex == this.endingTile) {
+                        for (int k = 0; k < this.tileWidth; k++) {
+                            
+                            output += k == (this.tileWidth / 2) ? "X" : this.tiles[tileNum][j].charAt(k);
                         }
                     } else {
                         output += this.tiles[tileNum][j];
@@ -268,7 +292,6 @@ public class GeneratorUi extends Application {
         this.mapDepth = newRows;
         updateWindowSize();
 
-        //this.setLoaded = loadTileSet(this.file);
         if (this.setLoaded) {
             long startTime = System.nanoTime();
             this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
@@ -276,6 +299,11 @@ public class GeneratorUi extends Application {
             this.map = this.dungeon.generateMap();
             double timeInterval = (double) (System.nanoTime() - startTime);
             this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms.");
+            this.validator = new Validator(map, tileSet);
+            this.validator.generateDistances();
+            this.startingTile = this.validator.getStartingTile();
+            this.endingTile = this.validator.getEndTile();
+            this.validated = true;
             displayMap();
         } else {
             this.notification.setText("Error loading tileset");
