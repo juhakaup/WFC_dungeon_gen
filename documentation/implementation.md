@@ -19,7 +19,7 @@ When an instance of the solver is created, it gets an instance of a TileSet clas
 
 ## Time and space coplexity
 I tested map initialization and solving separately. 
-As defined in the definition, the time complexity is O(n). The initilization stays very liner throughout the test range. 
+As defined in the definition, the time complexity is O(n). The initilization stays very throughout the test range. 
 The map generation times start to increase after 40x40 tile map. In the end, the processing time has more than doubled. This is with a map consisting of 25 000 objects, so this could be just memory issue as the tiles are selected in somewhat random order.
 ```
 Testing map initialization
@@ -48,10 +48,6 @@ Testing map solving after initialization
 
 ```
 ## Testing
-
-### Dungeon validity
-
-### Unit testing
 [Documented here](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/testing.md)
 
 ## Improvements
