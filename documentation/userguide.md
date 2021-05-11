@@ -1,14 +1,14 @@
 # WFC dungeon generator - user manual
 
-### Running the program
+## Running the program
 
-#### Running precompiled jar package
-The precompiled .jar file can be run from the command line with a command
+### Running precompiled jar package
+The precompiled *.jar* file can be run from the command line with the following command:
 ```
   java -jar WFC_dungeon_gen
 ```
 
-#### Compiling and running the program from source
+### Compiling and running the program from source
 The program uses gradle for building and package management.
 
 If you have gradle installed on your system, you can use the command *gradle* directly, if you do not have gradle installed, substitute the command *gradle* with *./gradlew* for the following commands.
@@ -23,7 +23,7 @@ To building a jar package containing all the dependencies, use the following com
   gradle shadowJar
 ```
 
-### User interface overview
+## User interface overview
 ![User interface](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/UI.PNG)
 
 The user interface consists of three parts. 

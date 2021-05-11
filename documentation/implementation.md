@@ -19,8 +19,8 @@ When an instance of the solver is created, it gets an instance of a TileSet clas
 
 ## Time and space coplexity
 I tested map initialization and solving separately. 
-As defined in the definition, the time complexity is O(n). The initilization stays very throughout the test range. 
-The map generation times start to increase after 40x40 tile map. In the end, the processing time has more than doubled. This is with a map consisting of 25 000 objects, so this could be just memory issue as the tiles are selected in somewhat random order.
+As defined in the definition, the time complexity is O(n). The initilization stays linear through most of the test range. 
+The map generation times start to increase after 40x40 tile map. In the end, the processing time has more than doubled. This is with a map consisting of 25 000 objects, this could be just memory issue as the tiles are selected in random order.
 ```
 Testing map initialization
 10000 10 x 10 maps initialized in   3721.450 ms. That is 37.215 ms per 10000 tiles.
