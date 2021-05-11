@@ -19,6 +19,7 @@ public class Validator {
     private int[] arrayHeap;
     private int startTile;
     private int endTile;
+    private int distanceToExit;
 
     public Validator(int[][] map, TileSet tileSet) {
         this.map = map;
@@ -40,25 +41,46 @@ public class Validator {
         return this.endTile;
     }
 
-    public int[] getDistanceMap() {
+    public int[] getDistances() {
         return this.distances;
+    }
+    
+    public boolean isValid() {
+        int startCol = this.startTile % this.columnLen;
+        int startRow = (this.startTile - startCol) / this.columnLen;
+        int endCol = this.endTile % this.columnLen;
+        int endRow = (this.endTile - startCol) / this.columnLen;
+        Type startType = this.tileTypes[this.map[startRow][startCol]];
+        Type endType =  this.tileTypes[this.map[endRow][endCol]];
+
+        if (startType == Type.EMPTY || endType == Type.EMPTY) {
+            return false;
+        }
+        return this.distanceToExit != 0;
     }
 
     public void generateDistances() {
         this.startTile = findStartingTile();
-        int farthest = 0;
+        if (this.startTile != -1) {
+            this.distanceToExit = 0;
 
-        // switches the starting point to farthest point until it no longer impoves the distance
-        while (true) {
-            int[] newDistanceMap = generateFlowField(startTile);
-            int end = findLargestDistance(newDistanceMap);
-            this.startTile = end;
-            if (newDistanceMap[end] <= farthest) {
-                break;
+            //this.distances = generateFlowField(startTile);
+            //this.endTile = findLargestDistance(this.distances);
+            // switches the starting point to farthest point until it no longer impoves the distance
+            while (true) {
+                int[] newDistanceMap = generateFlowField(startTile);
+                int end = findLargestDistance(newDistanceMap);
+                this.startTile = end;
+                if (newDistanceMap[end] <= this.distanceToExit) {
+                    break;
+                }
+                this.endTile = end;
+                this.distances = newDistanceMap;
+                this.distanceToExit = newDistanceMap[end];
             }
-            this.endTile = end;
-            this.distances = newDistanceMap;
-            farthest = newDistanceMap[end];
+        } else {
+            this.startTile = -1;
+            this.endTile = -1;
         }
     }
 
@@ -127,7 +149,8 @@ public class Validator {
      * @return index of the tile
      */
     private int findStartingTile() {
-        int index = 0;
+        this.visited = new boolean[this.map.length * this.map[0].length];
+        int index = (this.visited.length/2) + (this.columnLen/2);
         while (true) {
             int col = index % this.columnLen;
             int row = (index - col) / this.columnLen;
@@ -140,6 +163,10 @@ public class Validator {
 
             index++;
             if (index == this.map.length * this.columnLen) {
+                index = 0;//return -1;
+            }
+            
+            if (this.visited[index]) {
                 return -1;
             }
         }

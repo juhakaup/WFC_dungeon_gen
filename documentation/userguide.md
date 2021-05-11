@@ -36,6 +36,7 @@ The user interface consists of three parts.
   * *Width* and *Depth* -fields are used to determine the size of the generated map.
   * *Font size* controls the font size.
   * *Split tiles* separates the individual tiles.
+  * *Distances* displays the distance of the tile to the player.
 
 * In the middle there is a text output window. The generated map is displayed in here. You can edit the output, but this has no affect on the program.
 

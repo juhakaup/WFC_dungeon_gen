@@ -31,6 +31,7 @@ public class GeneratorUi extends Application {
     private Stage window;
     private TextArea textArea;
     private CheckBox chBoxSplitTiles;
+    private CheckBox chBoxDistances;
     private TextField tfNumRows;
     private TextField tfNumCols;
     private Label notification;
@@ -40,6 +41,7 @@ public class GeneratorUi extends Application {
     private int mapWidth;
     private int mapDepth;
     private int[][] map;
+    private int[] distances;
     private int startingTile;
     private int endingTile;
     private String[][] tiles;
@@ -47,7 +49,7 @@ public class GeneratorUi extends Application {
     private int tileWidth;
     private Solver dungeon;
     private Validator validator;
-    private boolean validated;
+    private boolean validDungeon;
     private String file;
     private int fontSize;
     private int minWindowWidth;
@@ -66,6 +68,11 @@ public class GeneratorUi extends Application {
         this.endingTile = -1;
     }
 
+    /**
+     * Initializes the ui.
+     * @param stage
+     * @throws Exception 
+     */
     @Override
     public void start(Stage stage) throws Exception {
         this.window = stage;
@@ -108,6 +115,10 @@ public class GeneratorUi extends Application {
         window.show();
     }
     
+    /**
+     * Creates the buttons for the ui.
+     * @return HBox ui element
+     */
     private HBox createControls() {
         HBox btn_pane = new HBox();
         Button btn_generate = new Button("Generate");
@@ -125,11 +136,6 @@ public class GeneratorUi extends Application {
             step();
         });
 
-//        Button btn_validate = new Button("Validate");
-//        btn_validate.setOnAction(e -> {
-//            this.validator = new Validator(this.map, this.tileSet);
-//            validateMap();
-//        });
 
         btn_pane.getChildren().addAll(btn_generate, btn_clear, btn_step);
         btn_pane.setSpacing(7);
@@ -137,11 +143,20 @@ public class GeneratorUi extends Application {
         return btn_pane;
     }
     
+    /**
+     * Creates the user configurable settings for the ui
+     * @return HBox user interface element.
+     */
     private HBox createSettings() {
         HBox ctrl_pane = new HBox();
         
         this.chBoxSplitTiles = new CheckBox("Split tiles");
         this.chBoxSplitTiles.setOnAction(e -> {
+            displayMap();
+        });
+        
+        this.chBoxDistances = new CheckBox("Distances");
+        this.chBoxDistances.setOnAction(e -> {
             displayMap();
         });
 
@@ -171,32 +186,43 @@ public class GeneratorUi extends Application {
             updateWindowSize();
         });
         
-        ctrl_pane.getChildren().addAll(colInput, rowInput, fontSpinner, chBoxSplitTiles);
+        ctrl_pane.getChildren().addAll(colInput, rowInput, fontSpinner, chBoxSplitTiles, chBoxDistances);
         ctrl_pane.setSpacing(10);
         ctrl_pane.setAlignment(Pos.CENTER);
         
         return ctrl_pane;
     }
 
+    /**
+     * Changes the ui-window size according to the settings.
+     */
     private void updateWindowSize() {
         this.textArea.setFont(Font.loadFont("file:data/square.ttf", this.fontSize));
         int tileSize = this.chBoxSplitTiles.isSelected() ? this.tileWidth + 1 : this.tileWidth;
+        
+        double actualFontSize = this.fontSize*1.055; // something like this
 
-        textArea.setMinHeight(this.fontSize * tileSize * (mapDepth+2));
-        textArea.setMinWidth(this.fontSize * tileSize * this.mapWidth);
+        textArea.setMinHeight(actualFontSize * tileSize * (mapDepth+2));
+        textArea.setMinWidth(actualFontSize * tileSize * this.mapWidth);
 
-        int textAreaWidth = this.fontSize * tileSize * mapWidth;
+        int textAreaWidth = (int) (actualFontSize * tileSize * mapWidth);
         this.window.setWidth((textAreaWidth < this.minWindowWidth) ? this.minWindowWidth : textAreaWidth);
-        this.window.setHeight(this.fontSize * tileSize * mapDepth + 200);
+        this.window.setHeight(actualFontSize * tileSize * mapDepth + 250);
     }
 
+    /**
+     * Initializes new dungeon map.
+     */
     private void clear() {
-        this.validated = false;
+        this.validDungeon = false;
         this.dungeon.initMap();
         this.map = dungeon.getMap();
         displayMap();
     }
 
+    /**
+     * Collapses single tile from the map.
+     */
     private void step() {
         boolean finished = !this.dungeon.step();
         this.map = dungeon.getMap();
@@ -205,38 +231,47 @@ public class GeneratorUi extends Application {
             this.validator.generateDistances();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
-            this.validated = true;
+            this.validDungeon = this.validator.isValid();
+            if (this.validDungeon) {
+                this.distances = this.validator.getDistances();
+            }
         }
         displayMap();
     }
 
-//    private void validateMap() {
-//        this.validator.generateDistances();
-//    }
-
+    /**
+     * Displays the map in the text area.
+     */
     private void displayMap() {
         String output = "";
+        String uninitialized = "";
+        for (int i = 0; i < this.tileWidth; i++) {
+            uninitialized += "*";
+        }
+        
         for (int row = 0; row < this.mapDepth; row++) {
             for (int j = 0; j < this.tileWidth; j++) {
                 for (int col = 0; col < this.mapWidth; col++) {
                     int tileNum = this.map[row][col];
                     int tileIndex = row*this.mapWidth + col;
 
-                    // un-initialized tiles
                     if (tileNum == -1) {
-                        for (int k = 0; k < this.tileWidth; k++) {
-                            output += "*";
+                        output += uninitialized;
+                    } else if (validDungeon && j == this.tileWidth / 2) {
+                        char[] charArray = this.tiles[tileNum][j].toCharArray();
+                        if (tileIndex == this.startingTile) {
+                            charArray[this.tileWidth / 2] = '@';
+                        } else if (tileIndex == this.endingTile) {
+                            charArray[this.tileWidth / 2] = 'X';
+                        } else if (this.chBoxDistances.isSelected()) { // distance to exit
+                            int distance = this.distances[row*this.mapWidth + col];
+                            String str = distance == Integer.MAX_VALUE ? "" : String.valueOf(distance);
+                            int pos = this.tileWidth / 2;
+                            for (int i=0; i<str.length(); i++) {
+                                charArray[pos+i] = str.charAt(i);
+                            }
                         }
-                    } else if (validated && j == this.tileWidth / 2 && tileIndex == this.startingTile) {
-                        for (int k = 0; k < this.tileWidth; k++) {
-                            
-                            output += k == (this.tileWidth / 2) ? "@" : this.tiles[tileNum][j].charAt(k);
-                        }
-                    } else if (validated && j == this.tileWidth / 2 && tileIndex == this.endingTile) {
-                        for (int k = 0; k < this.tileWidth; k++) {
-                            
-                            output += k == (this.tileWidth / 2) ? "X" : this.tiles[tileNum][j].charAt(k);
-                        }
+                        output += new String(charArray);
                     } else {
                         output += this.tiles[tileNum][j];
                     }
@@ -251,6 +286,11 @@ public class GeneratorUi extends Application {
         }
     }
     
+    /**
+     * Adds spaces between tiles in the given map string.
+     * @param mapString dungeon map
+     * @return dungeon map as string
+     */
     private String splitIntoGrid(String mapString) {
         String newOutput = "";
         int j = 0;
@@ -274,7 +314,10 @@ public class GeneratorUi extends Application {
         return newOutput;
     }
     
-     private void generateMap() {
+    /**
+     * Generates a new dungeon map and displays it in the text area.
+     */
+    private void generateMap() {
         int newRows = this.mapDepth;
         int newCols = this.mapWidth;
         try {
@@ -303,13 +346,21 @@ public class GeneratorUi extends Application {
             this.validator.generateDistances();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
-            this.validated = true;
+            this.validDungeon = this.validator.isValid();
+            if (this.validDungeon) {
+                this.distances = this.validator.getDistances();
+            }
             displayMap();
         } else {
             this.notification.setText("Error loading tileset");
         }
     }
     
+    /**
+     * Loads a new tileset
+     * @param file file location
+     * @return true if tileset was loaded false otherwise.
+     */
     private boolean loadTileSet(String file) {
         try {
             TileSet newTileSet = this.dao.loadTileSet(file);
