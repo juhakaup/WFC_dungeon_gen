@@ -63,7 +63,7 @@ public class GeneratorUi extends Application {
         this.mapWidth = 12;
         this.mapDepth = 6;
         this.fontSize = 10;
-        this.minWindowWidth = 800;
+        this.minWindowWidth = 900;
         this.startingTile = -1;
         this.endingTile = -1;
     }
@@ -86,6 +86,7 @@ public class GeneratorUi extends Application {
             if (newFile != null) {
                 if (loadTileSet(newFile.getAbsolutePath())) {
                     this.file = newFile.getAbsolutePath();
+                    this.dungeon = new Solver(mapWidth, mapDepth, this.tileSet, true);
                 }
             }
         });
@@ -246,7 +247,7 @@ public class GeneratorUi extends Application {
         String output = "";
         String uninitialized = "";
         for (int i = 0; i < this.tileWidth; i++) {
-            uninitialized += "*";
+            uninitialized += "/";
         }
         
         for (int row = 0; row < this.mapDepth; row++) {
