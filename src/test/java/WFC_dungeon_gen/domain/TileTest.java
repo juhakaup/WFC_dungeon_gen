@@ -51,4 +51,19 @@ public class TileTest {
         assertEquals(setTiles, available);
     }
     
+    /**
+     * Tests that sum of possible weights returns correct values.
+     */
+    @Test
+    public void testsumOfPossibleWeights() {
+        tile.setAvalableTiles(new boolean[]{true, true, true});
+        assertEquals(25, tile.getSumOfPossibleWeights());
+        
+        tile.setAvalableTiles(new boolean[]{false, true, true});
+        assertEquals(15, tile.getSumOfPossibleWeights());
+        
+        tile.setAvalableTiles(new boolean[]{false, false, true});
+        assertEquals(5, tile.getSumOfPossibleWeights());
+    }
+    
 }

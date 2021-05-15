@@ -2,6 +2,7 @@ package WFC_dungeon_gen.domain;
 
 import WFC_dungeon_gen.util.MyRandom;
 import WFC_dungeon_gen.util.TileQueue;
+import WFC_dungeon_gen.util.IntegerList;
 
 /**
  * Wave function collapse dungeon generator
@@ -9,6 +10,7 @@ import WFC_dungeon_gen.util.TileQueue;
  * @author Juha Kauppinen
  */
 public class Solver {
+
     private static final boolean USE_SYS_METHODS = false;
     private Tile[][] dungeonMap;
     private final int numPossibleTiles;
@@ -140,27 +142,22 @@ public class Solver {
      * Randomly sets the outcome of the tile to one of its possible outcomes,
      * based on weighted distribution of tiles
      *
-     * @param tileParam parameters containing coordinates for the tile
+     * @param tile parameters containing coordinates for the tile
      */
     private void collapseTile(Tile tile) {
-        int sumWeight = tile.getSumOfPossibleWeights();
-        if (sumWeight < 1) {
-            sumWeight = 1;
-        }
-        int randomInt = random.getNextIntInRange(sumWeight);
-
         boolean[] availableTiles = tile.getAvailableTiles();
-        int chosenTile = 0;
-        while (randomInt > 0) {
-            for (; chosenTile < availableTiles.length; chosenTile++) {
-                if (availableTiles[chosenTile]) {
-                    randomInt -= this.tileWeights[chosenTile];
-                }
-                if (randomInt <= 0) {
-                    break;
+        IntegerList weightedTiles = new IntegerList();
+
+        for (int i = 0; i < availableTiles.length; i++) {
+            if (availableTiles[i]) {
+                for (int j = 0; j < this.tileWeights[i]; j++) {
+                    weightedTiles.add(i);
                 }
             }
         }
+        int randomInt = random.getNextIntInRange(weightedTiles.size());
+        int chosenTile = weightedTiles.get(randomInt - 1);
+
         boolean[] availableAfterCollapse = new boolean[this.numPossibleTiles];
         availableAfterCollapse[chosenTile] = true;
 
@@ -193,10 +190,11 @@ public class Solver {
                     // tiles that the neighboring tile could turn into
                     boolean[] possibleTiles = gatherAvailableTiles(propagatorTiles, dir);
                     boolean[] availableTiles = booleanArraysIntersection(
-                            neighbour.getAvailableTiles(), 
+                            neighbour.getAvailableTiles(),
                             possibleTiles
                     );
 
+                    //availableTiles = gatherSurroundingTiles(neighbourRow, neighbourCol);
                     // if the new tiles are different than what the tile already had, return true
                     Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
                     // if we get back null, there has been an error and map is reset
@@ -245,29 +243,31 @@ public class Solver {
 
     /**
      * Constructs a new boolean array with elements that are true in both
-     * arrays. This is done by copying false elements from B to A, so not a true
-     * intersection.
+     * arrays.
      *
-     * @param boolA Array to be trimmed.
-     * @param boolB Trimming array.
-     * @return Boolean array
+     * @param boolA boolean array
+     * @param boolB boolean array
+     * @return new boolean array
      */
     private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[this.numPossibleTiles];
-        if (USE_SYS_METHODS) {
-            System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
-        } else {
-            for (int i = 0; i < boolA.length; i++) {
-                if (boolA[i]) {
-                    newBool[i] = true;
-                }
-            }
-        }
+//        if (USE_SYS_METHODS) {
+//            System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
+//        } else {
+//            for (int i = 0; i < boolA.length; i++) {
+//                if (boolA[i]) {
+//                    newBool[i] = true;
+//                }
+//            }
+//        }
 
+//        for (int i = 0; i < boolA.length; i++) {
+//            if (!boolB[i]) {
+//                newBool[i] = false;
+//            }
+//        }
         for (int i = 0; i < boolA.length; i++) {
-            if (!boolB[i]) {
-                newBool[i] = false;
-            }
+            newBool[i] = boolA[i] && boolB[i];
         }
         return newBool;
     }
@@ -353,5 +353,6 @@ public class Solver {
             }
             propagate(nextTile);
         }
+//        System.out.println("jee");
     }
 }

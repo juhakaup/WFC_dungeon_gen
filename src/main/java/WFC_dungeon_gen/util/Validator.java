@@ -16,7 +16,8 @@ public class Validator {
     private boolean[] visited;
     private final int columnLen;
     private int[] distances;
-    private int[] arrayHeap;
+    private IntegerList heap;
+    private int heapTop;
     private int startTile;
     private int endTile;
     private int distanceToExit;
@@ -29,8 +30,8 @@ public class Validator {
         int numberOfTiles = map.length * map[0].length;
         this.visited = new boolean[numberOfTiles + 1];
         this.distances = null;
-        this.arrayHeap = new int[0];
-
+        this.heap = new IntegerList();
+        this.heapTop = -1;
     }
 
     public int getStartingTile() {
@@ -104,7 +105,7 @@ public class Validator {
         distMap[start] = 0;
 
         // calculate the distances
-        while (arrayHeap.length > 0) {
+        while (this.heapTop >= 0) {
             int tile = removeLastFromHeap();
             int distance = distMap[tile];
             int row = (int) tile / this.columnLen;
@@ -130,16 +131,6 @@ public class Validator {
                 }
             }
         }
-
-//        System.out.println("node count " + nodeCount);
-//        for (int i = 0; i < this.map.length; i++) {
-//            for (int j = 0; j < this.map[0].length; j++) {
-//                int dist = distMap[i*this.columnLen + j]; //dMap[i][j];
-//                dist = dist == Integer.MAX_VALUE ? -1 : dist;
-//                System.out.printf("%2d ", dist);
-//            }
-//            System.out.println("");
-//        }
         return distMap;
     }
 
@@ -205,34 +196,26 @@ public class Validator {
     }
 
     /**
-     * Adds given value to the end of an array.
+     * Adds given value to the list that is used as a heap
      *
      * @param value value to be added.
      */
     private void pushToTheHeap(int value) {
-        int[] newArray = new int[this.arrayHeap.length + 1];
-
-        for (int i = 0; i < this.arrayHeap.length; i++) {
-            newArray[i] = this.arrayHeap[i];
+        this.heapTop++;
+        if (this.heap.size() > this.heapTop) {
+            this.heap.set(this.heapTop, value);
+        } else {
+            this.heap.add(value);
         }
-        newArray[newArray.length - 1] = value;
-        this.arrayHeap = newArray;
     }
 
     /**
-     * Removes the last value from an array.
+     * Retrieves the entry from the list representing the heap top
      *
-     * @return the last value of an aray.
+     * @return integer
      */
     private int removeLastFromHeap() {
-        int[] newArray = new int[this.arrayHeap.length - 1];
-        int returnValue = this.arrayHeap[this.arrayHeap.length - 1];
-
-        for (int i = 0; i < newArray.length; i++) {
-            newArray[i] = this.arrayHeap[i];
-        }
-        this.arrayHeap = newArray;
-        return returnValue;
+        return this.heap.get(this.heapTop--);
     }
 
 }
