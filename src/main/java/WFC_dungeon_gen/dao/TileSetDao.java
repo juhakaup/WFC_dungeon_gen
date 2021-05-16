@@ -4,7 +4,7 @@ import WFC_dungeon_gen.domain.TileSet;
 import java.io.FileNotFoundException;
 
 /**
- *
+ * Interface for loading TileSet objects.
  * @author Juha Kauppinen
  */
 public interface TileSetDao {

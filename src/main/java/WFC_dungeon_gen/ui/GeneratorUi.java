@@ -44,6 +44,7 @@ public class GeneratorUi extends Application {
     private int[] distances;
     private int startingTile;
     private int endingTile;
+    private int numberOfRetries;
     private String[][] tiles;
     private boolean setLoaded;
     private int tileWidth;
@@ -62,6 +63,7 @@ public class GeneratorUi extends Application {
         this.setLoaded = loadTileSet(this.file);
         this.mapWidth = 12;
         this.mapDepth = 6;
+        this.numberOfRetries = 100;
         this.fontSize = 10;
         this.minWindowWidth = 900;
         this.startingTile = -1;
@@ -70,8 +72,8 @@ public class GeneratorUi extends Application {
 
     /**
      * Initializes the ui.
-     * @param stage
-     * @throws Exception 
+     * @param stage main stage
+     * @throws Exception if there is error loading data
      */
     @Override
     public void start(Stage stage) throws Exception {
@@ -124,6 +126,7 @@ public class GeneratorUi extends Application {
         HBox btn_pane = new HBox();
         Button btn_generate = new Button("Generate");
         btn_generate.setOnAction(e -> {
+            this.numberOfRetries = 100;
             generateMap();
         });
 
@@ -229,7 +232,7 @@ public class GeneratorUi extends Application {
         this.map = dungeon.getMap();
         if (finished) {
             this.validator = new Validator(map, tileSet);
-            this.validator.generateDistances();
+            this.validator.generateStartAndEndpoints();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
             this.validDungeon = this.validator.isValid();
@@ -246,8 +249,10 @@ public class GeneratorUi extends Application {
     private void displayMap() {
         String output = "";
         String uninitialized = "";
+        String empty = "";
         for (int i = 0; i < this.tileWidth; i++) {
             uninitialized += "/";
+            empty += " ";
         }
         
         for (int row = 0; row < this.mapDepth; row++) {
@@ -258,6 +263,8 @@ public class GeneratorUi extends Application {
 
                     if (tileNum == -1) {
                         output += uninitialized;
+                    } else if ((validDungeon && this.distances[row*this.mapWidth + col] == Integer.MAX_VALUE)) {
+                        output += empty;
                     } else if (validDungeon && j == this.tileWidth / 2) {
                         char[] charArray = this.tiles[tileNum][j].toCharArray();
                         if (tileIndex == this.startingTile) {
@@ -344,12 +351,19 @@ public class GeneratorUi extends Application {
             double timeInterval = (double) (System.nanoTime() - startTime);
             this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms.");
             this.validator = new Validator(map, tileSet);
-            this.validator.generateDistances();
+            this.validator.generateStartAndEndpoints();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
             this.validDungeon = this.validator.isValid();
             if (this.validDungeon) {
                 this.distances = this.validator.getDistances();
+            } else {
+                if (this.numberOfRetries < 0) {
+                    this.notification.setText("Error validating the map");
+                } else {
+                    this.numberOfRetries--;
+                    generateMap();
+                }
             }
             displayMap();
         } else {

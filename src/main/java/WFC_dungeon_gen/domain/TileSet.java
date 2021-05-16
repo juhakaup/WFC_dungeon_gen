@@ -3,7 +3,7 @@ package WFC_dungeon_gen.domain;
 import static WFC_dungeon_gen.domain.Direction.*;
 
 /**
- *
+ * TileSet contains the data used for creating dungeons.
  * @author Juha Kauppinen
  */
 public class TileSet {
@@ -77,6 +77,11 @@ public class TileSet {
         return adjacencies;
     }
 
+    /**
+     * Coverts the string representation of boolean array to actual boolean array.
+     * @param str String containing zeros and ones.
+     * @return boolean array.
+     */
     private boolean[] strToBool(String str) {
         boolean[] bools = new boolean[str.length()];
         for (int i = 0; i < str.length(); i++) {

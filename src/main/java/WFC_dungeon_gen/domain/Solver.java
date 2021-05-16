@@ -10,8 +10,6 @@ import WFC_dungeon_gen.util.IntegerList;
  * @author Juha Kauppinen
  */
 public class Solver {
-
-    private static final boolean USE_SYS_METHODS = false;
     private Tile[][] dungeonMap;
     private final int numPossibleTiles;
     private final int[] tileWeights;
@@ -39,6 +37,9 @@ public class Solver {
         initMap();
     }
 
+    /**
+     * Initializes the map, resets the queues and adds borders if necessary.
+     */
     public final void initMap() {
         this.entropyQueue = new TileQueue(512);
         this.propagatorQueue = new TileQueue(512);
@@ -48,6 +49,10 @@ public class Solver {
         }
     }
 
+    /**
+     * Generates a new dungeon.
+     * @return 2d integer array of tile id's.
+     */
     @SuppressWarnings("empty-statement")
     public int[][] generateMap() {
         this.numberOfRetries = 0;
@@ -83,6 +88,10 @@ public class Solver {
         return convertToTileIds(dungeonMap);
     }
 
+    /**
+     * Returns the number of retries before a valid map is produced.
+     * @return 
+     */
     public int getNumOfRetries() {
         return this.numberOfRetries;
     }
@@ -182,7 +191,7 @@ public class Solver {
             int neighbourRow = row + dir.vectY;
             int neighbourCol = col + dir.vectX;
 
-            // if the tile is valid, adjust its available tiles
+            // if the tile is valid, adjust its available tiles according to propagator
             if (validCoordinate(neighbourRow, neighbourCol)) {
                 Tile neighbour = dungeonMap[neighbourRow][neighbourCol];
                 if (!neighbour.isCollapsed()) {
@@ -194,14 +203,13 @@ public class Solver {
                             possibleTiles
                     );
 
-                    //availableTiles = gatherSurroundingTiles(neighbourRow, neighbourCol);
                     // if the new tiles are different than what the tile already had, return true
                     Boolean tileChanged = neighbour.setAvalableTiles(availableTiles);
                     // if we get back null, there has been an error and map is reset
                     if (tileChanged == null) {
                         this.numberOfRetries++;
                         initMap();
-                    } // if tile is changed, add it to queues
+                    } // if tile is changed, add it to queues to propagate the change further
                     else if (tileChanged) {
                         this.propagatorQueue.add(neighbour);
                         this.entropyQueue.add(neighbour);
@@ -212,11 +220,11 @@ public class Solver {
     }
 
     /**
-     * Check if the given coordinates are within the map array
+     * Check if the given coordinates are within the map array.
      *
      * @param row array index
      * @param col array index
-     * @return true if the coordinates are within the map, false otherwise
+     * @return true if the coordinates are within the map, false otherwise.
      */
     private boolean validCoordinate(int row, int col) {
         if (row < 0 || row >= this.depth) {
@@ -231,7 +239,7 @@ public class Solver {
      *
      * @param boolA Boolean array A
      * @param boolB Boolean array B
-     * @return New boolean array
+     * @return New boolean array.
      */
     private boolean[] orTwoBooleanArrays(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[boolA.length];
@@ -251,21 +259,6 @@ public class Solver {
      */
     private boolean[] booleanArraysIntersection(boolean[] boolA, boolean[] boolB) {
         boolean[] newBool = new boolean[this.numPossibleTiles];
-//        if (USE_SYS_METHODS) {
-//            System.arraycopy(boolA, 0, newBool, 0, this.numPossibleTiles);
-//        } else {
-//            for (int i = 0; i < boolA.length; i++) {
-//                if (boolA[i]) {
-//                    newBool[i] = true;
-//                }
-//            }
-//        }
-
-//        for (int i = 0; i < boolA.length; i++) {
-//            if (!boolB[i]) {
-//                newBool[i] = false;
-//            }
-//        }
         for (int i = 0; i < boolA.length; i++) {
             newBool[i] = boolA[i] && boolB[i];
         }
@@ -353,6 +346,5 @@ public class Solver {
             }
             propagate(nextTile);
         }
-//        System.out.println("jee");
     }
 }

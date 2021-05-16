@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import java.io.FileNotFoundException;
 
 /**
- *
+ * TileSet dao implementation for hard coded test data.
  * @author Juha Kauppinen
  */
 public class TileSetTestData implements TileSetDao {

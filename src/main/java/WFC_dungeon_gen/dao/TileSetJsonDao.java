@@ -8,7 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 
 /**
- *
+ * JSON implementation of the dao.
  * @author Juha Kauppinen
  */
 public class TileSetJsonDao implements TileSetDao {

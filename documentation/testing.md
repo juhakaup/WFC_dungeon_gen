@@ -13,13 +13,7 @@ Test coverage is measured using JaCoCo. The user-interface is left out of the co
 Testing coverage raport on codecov:
 [![codecov](https://codecov.io/gh/juhakaup/WFC_dungeon_gen/branch/master/graph/badge.svg)](https://codecov.io/gh/juhakaup/WFC_dungeon_gen)
 
-## Performance tests
-
-Ideas on what to test.
-* Dungeon generator itself with various tilesets and output sizes.
-* Generator with post-processing.
-* Just post-processing
-* Performance with some standard library implementations.
-
 ## Dungeon validity
-There is no actual integrity testing for the generated dungeon. The nature of the algoritm is to generate random dungeons that should be valid, if the code is working properly. The program does place the player and exit on the map, and tries to place them as far apart as possible. So there should always be a valid path from the player to the exit.
+The validity of the dungeon is tested by the Validator class. It places a starting point in a walkable tile near the center of the map and calculates the distances of each reachable tile from there. If it cannot place the staring point, or if the start or endpoints land on empty tile, the map is invalid. In a valid map, there should always be a path from the start to the endpoint. 
+There is no test that the given data is able to produce a valid map, and for example validating the *dungeon_basic.JSON* is not possible with the the tile data only, it could be validated by checking the text output, but at the moment there is no such feature.
+The map generation is unit tested with data that should be able to generate a valid map.

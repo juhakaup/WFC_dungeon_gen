@@ -5,7 +5,7 @@ import WFC_dungeon_gen.domain.TileSet;
 import WFC_dungeon_gen.domain.Type;
 
 /**
- *
+ * This class is used to validate the generated dungeon.
  * @author Juha Kauppinen
  */
 public class Validator {
@@ -46,7 +46,14 @@ public class Validator {
         return this.distances;
     }
     
+    /**
+     * Checks that there are valid start and enpoints.
+     * @return true if the map is valid false otherwice.
+     */
     public boolean isValid() {
+        if (this.startTile == -1 || this.endTile == -1) {
+            return false;
+        }
         int startCol = this.startTile % this.columnLen;
         int startRow = (this.startTile - startCol) / this.columnLen;
         int endCol = this.endTile % this.columnLen;
@@ -60,16 +67,17 @@ public class Validator {
         return this.distanceToExit != 0;
     }
 
-    public void generateDistances() {
+    /**
+     * Sets the start and enpoints.
+     */
+    public void generateStartAndEndpoints() {
         this.startTile = findStartingTile();
         if (this.startTile != -1) {
             this.distanceToExit = 0;
 
-            //this.distances = generateFlowField(startTile);
-            //this.endTile = findLargestDistance(this.distances);
             // switches the starting point to farthest point until it no longer impoves the distance
             while (true) {
-                int[] newDistanceMap = generateFlowField(startTile);
+                int[] newDistanceMap = generateDistanceMap(startTile);
                 int end = findLargestDistance(newDistanceMap);
                 this.startTile = end;
                 if (newDistanceMap[end] <= this.distanceToExit) {
@@ -92,7 +100,7 @@ public class Validator {
      * @param start index of the starting tile.
      * @return integer array with distances for each tile index.
      */
-    public int[] generateFlowField(int start) {
+    public int[] generateDistanceMap(int start) {
         this.visited = new boolean[map.length * map[0].length + 1];
         int nodeCount = 0;
 
@@ -135,7 +143,7 @@ public class Validator {
     }
 
     /**
-     * Finds the first tile that is not empty.
+     * Finds the first tile that is not empty, starting from the center of the map.
      *
      * @return index of the tile
      */

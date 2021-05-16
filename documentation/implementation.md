@@ -19,8 +19,9 @@ When an instance of the solver is created, it gets an instance of a TileSet clas
 
 ## Time and space coplexity
 I tested map initialization and solving separately. 
-As defined in the definition, the time complexity is O(n). The initilization stays linear through most of the test range. 
-The map generation times start to increase after 40x40 tile map. In the end, the processing time has more than doubled. This is with a map consisting of 25 000 objects, this could be just memory issue as the tiles are selected in random order.
+The initilization stays linear through most of the test range as expected.
+The map generation times start to increase after 40x40 tile map. In the end the processing time has more than doubled. Solving the map uses a priority queue, with time complexity of O(n log(n)). Although the number of operations per tile should stay the same while solving the map, the tiles are placed on the queue at the beginning of the solving process so this would bring the time complexity to O(n log(n)).
+Most of the data is stored and operated on in fixed size arrays. The priority queues should stay relatively small and certainly not exceed any multiple of n. So the space complexity is O(n).
 ```
 Testing map initialization
 10000 10 x 10 maps initialized in   3721.450 ms. That is 37.215 ms per 10000 tiles.
@@ -51,7 +52,7 @@ Testing map solving after initialization
 [Documented here](https://github.com/juhakaup/WFC_dungeon_gen/blob/master/documentation/testing.md)
 
 ## Improvements
-There is probably a lot of optimization that could be done. I think that having the tile as a separate class is a bit of an overkill, the same amount of information could be stored in a few arrays. It would be interesting to convert the boolean arrays used to store the available tiles to bitSets, the memory savings these days is neglegtable, but maybe the set operations would be faster.
+There is probably a lot of optimization that could be done. I think that having the tile as a separate class is a bit of an overkill, the same amount of information could be stored in a few arrays. It would also be interesting to convert the boolean arrays used to store the available tiles to bitSets, the memory savings these days is neglegtable, but maybe the set operations would be faster. Overall I think the code could be simplified a bit. Some king of automatic extrapolation of the tileset data would improve the usability of the program and reduce bugs.
 
 ## References
 ### Wave function collapse algorithm
