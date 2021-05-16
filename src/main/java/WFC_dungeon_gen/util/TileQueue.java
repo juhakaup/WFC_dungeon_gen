@@ -3,7 +3,7 @@ package WFC_dungeon_gen.util;
 import WFC_dungeon_gen.domain.Tile;
 
 /**
- *
+ * Priority queue for Tile-objects. Tiles are prioritized by entropy values.
  * @author Juha Kauppinen
  */
 public class TileQueue {

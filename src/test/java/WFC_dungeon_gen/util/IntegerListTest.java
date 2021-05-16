@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
- *
+ * Tests for integer list
  * @author Juha Kauppinen
  */
 public class IntegerListTest {

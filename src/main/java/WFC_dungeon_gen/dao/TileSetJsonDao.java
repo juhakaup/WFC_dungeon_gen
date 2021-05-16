@@ -14,6 +14,12 @@ import java.io.InputStreamReader;
 public class TileSetJsonDao implements TileSetDao {
     private static final Gson GSON = new Gson();
     
+    /**
+     * JSON implementation of the data loading.
+     * @param file file to be loaded.
+     * @return TileSet object
+     * @throws FileNotFoundException if the data could not be loaded.
+     */
     @Override
     public TileSet loadTileSet(String file) throws FileNotFoundException {
         InputStreamReader reader = new InputStreamReader(new FileInputStream(file));

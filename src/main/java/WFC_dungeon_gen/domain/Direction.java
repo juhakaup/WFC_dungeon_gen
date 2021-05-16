@@ -1,7 +1,7 @@
 package WFC_dungeon_gen.domain;
 
 /**
- *
+ * Enumerator containing cardinal directions. Has some additional attributes.
  * @author Juha Kauppinen
  */
 public enum Direction {

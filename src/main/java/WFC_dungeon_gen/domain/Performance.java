@@ -6,7 +6,7 @@ import WFC_dungeon_gen.dao.TileSetTestData;
 import java.io.FileNotFoundException;
 
 /**
- *
+ * This class is used for some performance tests.
  * @author Juha Kauppinen
  */
 public class Performance {

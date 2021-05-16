@@ -1,7 +1,7 @@
 package WFC_dungeon_gen.util;
 
 /**
- *
+ * List data structure. Stores integers.
  * @author Juha Kauppinen
  */
 public class IntegerList {

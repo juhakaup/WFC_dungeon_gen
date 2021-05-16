@@ -10,7 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Tests for TileSet-class.
  * @author Juha Kauppinen
  */
 public class TileSetTest {

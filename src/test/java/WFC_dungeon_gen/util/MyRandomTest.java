@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 /**
- *
+ * Tests for random number generator.
  * @author Juha Kauppinen
  */
 public class MyRandomTest {

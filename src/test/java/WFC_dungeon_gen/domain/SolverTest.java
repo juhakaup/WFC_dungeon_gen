@@ -2,7 +2,6 @@ package WFC_dungeon_gen.domain;
 
 import WFC_dungeon_gen.dao.TileSetJsonDao;
 import WFC_dungeon_gen.dao.TileSetTestData;
-import com.sun.prism.shader.Solid_Color_AlphaTest_Loader;
 import java.io.FileNotFoundException;
 import java.util.Random;
 import org.junit.Before;
@@ -10,7 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Tests for the actual dungeon generator aka solver.
  * @author Juha Kauppinen
  */
 public class SolverTest {
@@ -90,6 +89,9 @@ public class SolverTest {
         assertEquals(average, (width * depth) / 2, 2);
     }
 
+    /**
+     * Check that the random collapsing of the tile follows the given weights.
+     */
     @Test
     public void tilesAreCollapsedAccordingToWeights() {
         int cycles = 100000;
@@ -118,6 +120,9 @@ public class SolverTest {
         }
     }
 
+    /**
+     * Check that the borders are created accordingly.
+     */
     @Test
     public void createBorderdWorksAsExpected() {
         TileSet set = null;
@@ -182,7 +187,9 @@ public class SolverTest {
                         int adjacentRow = row + dir.vectY;
                         int adjacentCol = col + dir.vectX;
                         
-                        if (tileType != Type.EMPTY && availableDirections[dir.value] && (adjacentRow >= 0 && adjacentRow < dep) && (adjacentCol >= 0 && adjacentCol < len)) {
+                        if (tileType != Type.EMPTY && availableDirections[dir.value] 
+                                && (adjacentRow >= 0 && adjacentRow < dep) 
+                                && (adjacentCol >= 0 && adjacentCol < len)) {
                             Type adjacentType = types[newMap[adjacentRow][adjacentCol]];
                             assertNotEquals(tileType, Type.EMPTY);
                         }

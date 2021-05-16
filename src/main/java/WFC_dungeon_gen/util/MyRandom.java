@@ -3,7 +3,7 @@ package WFC_dungeon_gen.util;
 import java.util.Random;
 
 /**
- *
+ * Random number generator.
  * @author Juha Kauppinen
  */
 public class MyRandom {

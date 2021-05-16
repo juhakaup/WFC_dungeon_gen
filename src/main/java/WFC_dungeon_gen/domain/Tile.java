@@ -1,7 +1,7 @@
 package WFC_dungeon_gen.domain;
 
 /**
- *
+ * This class represents a single tile on the map.
  * @author Juha Kauppinen
  */
 public class Tile {

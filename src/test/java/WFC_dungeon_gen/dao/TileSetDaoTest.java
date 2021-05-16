@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Tests for DAO classes.
  * @author Juha Kauppinen
  */
 public class TileSetDaoTest {
@@ -38,7 +38,7 @@ public class TileSetDaoTest {
     }
     
     /**
-     * Test loading test data, oh yes
+     * Test loading test data
      */
     @Test
     public void testLoadingTestData() {

@@ -1,7 +1,7 @@
 package WFC_dungeon_gen.ui;
 
 /**
- * Wave function collapse dungeon gen ui
+ * Wave function collapse dungeon generator user interface.
  * @author Juha Kauppinen
  */
 import WFC_dungeon_gen.dao.TileSetDao;
@@ -232,7 +232,7 @@ public class GeneratorUi extends Application {
         this.map = dungeon.getMap();
         if (finished) {
             this.validator = new Validator(map, tileSet);
-            this.validator.generateStartAndEndpoints();
+            this.validator.validateMap();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
             this.validDungeon = this.validator.isValid();
@@ -351,7 +351,7 @@ public class GeneratorUi extends Application {
             double timeInterval = (double) (System.nanoTime() - startTime);
             this.notification.setText("Map generated in: " + timeInterval * 0.000001 + "ms.");
             this.validator = new Validator(map, tileSet);
-            this.validator.generateStartAndEndpoints();
+            this.validator.validateMap();
             this.startingTile = this.validator.getStartingTile();
             this.endingTile = this.validator.getEndTile();
             this.validDungeon = this.validator.isValid();

@@ -6,15 +6,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Tests for priority queue for tiles.
  * @author Juha Kauppinen
  */
 public class TileQueueTest {
     
     private TileQueue tileQueue;
-    
-    public TileQueueTest() {
-    }
     
     @Before
     public void setUp() {

@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Tests for Tile-class.
  * @author Juha Kauppinen
  */
 public class TileTest {

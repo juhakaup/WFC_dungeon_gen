@@ -182,6 +182,12 @@ public class TileSetTestData implements TileSetDao {
             + "  ]"
             + "}";
 
+    /**
+     * Returns one of the hard coded tilesets according to given input.
+     * @param file String for selecting the dataset.
+     * @return TileSet object.
+     * @throws FileNotFoundException not valid here.
+     */
     @Override
     public TileSet loadTileSet(String file) throws FileNotFoundException {
         String testData;

@@ -70,7 +70,7 @@ public class Validator {
     /**
      * Sets the start and enpoints.
      */
-    public void generateStartAndEndpoints() {
+    public void validateMap() {
         this.startTile = findStartingTile();
         if (this.startTile != -1) {
             this.distanceToExit = 0;
